@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
-# KOREKSI IMPOR: service_account_from_dict adalah cara yang benar
+# KOREKSI FINAL: Mengimpor sub-modul sebagai alias untuk menghindari path error
 from gspread import Client, Spreadsheet
-from gspread.service_account import service_account_from_dict # BARIS KOREKSI
+import gspread.service_account as gsa # BARIS KOREKSI
 from gspread_dataframe import set_with_dataframe, get_dataframe
 import random
 import json
@@ -24,9 +24,8 @@ def get_sheet_client():
         if isinstance(secrets, str):
             secrets = json.loads(secrets)
             
-        # KOREKSI UTAMA LOGIKA: Mendapatkan Service Account Client dari dictionary secrets
-        # service_account_info() yang lama diganti dengan service_account_from_dict()
-        gc = service_account_from_dict(secrets)
+        # Panggil fungsi melalui alias gsa
+        gc = gsa.service_account_from_dict(secrets) # BARIS KOREKSI
 
         # gc adalah Client object, yang bisa membuka spreadsheet
         return gc.open_by_url(GOOGLE_SHEET_URL)
@@ -36,7 +35,7 @@ def get_sheet_client():
         st.stop()
         return None
 
-# --- FUNGSI LOAD & SAVE DATA ---
+# --- FUNGSI LOAD & SAVE DATA (SISANYA SAMA) ---
 
 def load_data(sheet_name):
     """Memuat data dari sheet tertentu sebagai DataFrame."""
@@ -99,7 +98,7 @@ def save_data(df, sheet_name):
         st.error(f"Error menyimpan data ke Sheets: {e}")
         return False
 
-# --- FUNGSI UTILITY ---
+# --- FUNGSI UTILITY (SISANYA SAMA) ---
 
 def get_next_id(df, id_col_name):
     """Mendapatkan ID berikutnya berdasarkan kolom ID di DataFrame."""
@@ -258,7 +257,7 @@ def buat_jadwal(pemain_df, putaran, num_lapangan, mode_permainan, format_turname
             
     return jadwal_baru
 
-# --- FUNGSI AKSI (Menggunakan Session State untuk sementara dan Save ke Sheets) ---
+# --- FUNGSI AKSI (SISANYA SAMA) ---
 
 def tambah_pemain_action(nama):
     pemain_df = load_data('Pemain')
@@ -413,7 +412,7 @@ def input_skor_action(match_id, skor_tim_1, skor_tim_2):
             mulai_putaran_action(config['num_lapangan'], config['format_turnamen'], config['mode_permainan'])
         
 
-# --- ANTARMUKA UTAMA STREAMLIT ---
+# --- ANTARMUKA UTAMA STREAMLIT (SISANYA SAMA) ---
 
 def main_app():
     
