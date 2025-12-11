@@ -245,8 +245,7 @@
                         <th style="text-align: center;">Total Poin</th>
                         <th>W/L/T</th> 
                         <th>Games Dimainkan</th>
-                        <th>Aksi</th>
-                    </tr>
+                        </tr>
                 </thead>
                 <tbody>
                     {% for p in peringkat %}
@@ -261,12 +260,11 @@
                         <td style="text-align: center; font-weight: 700; color: var(--wimbledon-purple);">{{ p.Total_Poin }}</td>
                         <td>{{ p.W }}/{{ p.L }}/{{ p.T }}</td> 
                         <td>{{ p.Games_Played }}</td>
-                        <td></td>
-                    </tr>
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            <p class="info-note" style="color: #666;">* Menghapus pemain akan otomatis membatalkan seluruh jadwal di putaran saat ini.</p>
+            <p class="info-note" style="color: #666;">* Tombol ❌ berfungsi untuk menghapus pemain. Menghapus pemain akan otomatis membatalkan seluruh jadwal di putaran saat ini.</p>
             {% else %}
             <p>Belum ada pemain terdaftar. Silakan tambahkan pemain di atas.</p>
             {% endif %}
