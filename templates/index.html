@@ -1,69 +1,88 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Americano/Mexicano Tenis Manager - WIMBLEDON EDITION</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Americano/Mexicano Tennis Manager - PRO EDITION</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* WIMBLEDON PALETTE */
+        /* PRO EDITION PALETTE (Monochrome + Blue Accent) */
         :root {
-            --wimbledon-purple: #460046; /* Deep Purple */
-            --wimbledon-green: #006400;  /* Dark Green */
-            --wimbledon-white: #ffffff;
-            --wimbledon-light-grey: #f0f0f0;
-            --wimbledon-accent: #ffd700; /* Gold for highlight */
+            --light-bg: #f5f5f7; 
+            --white-card: #ffffff; 
+            --black-text: #1d1d1f; 
+            --grey-text: #6e6e73; 
+            --border-light: #d2d2d7; 
+            --accent-blue: #0071e3; /* Primary Action Color */
+            --success-green: #34c759;
+            --danger-red: #ff3b30;
         }
 
         /* BASE & LAYOUT */
         body { 
             font-family: 'Roboto', sans-serif; 
             margin: 0; 
-            background-color: var(--wimbledon-light-grey); 
-            color: #333; 
-            line-height: 1.6;
+            background-color: var(--light-bg); 
+            color: var(--black-text); 
+            line-height: 1.5;
+            font-weight: 400;
         }
         
-        /* HEADER KECIL BARU UNTUK HANIFF */
-        .sub-header-haniif {
-            background-color: var(--wimbledon-green); /* Green bar */
-            color: var(--wimbledon-accent); /* Gold text */
-            padding: 5px 40px;
-            font-size: 0.85em;
+        /* HEADER - Ultra Minimalist and Strong Typography */
+        .header-main { 
+            background-color: var(--white-card); 
+            color: var(--black-text); 
+            padding: 50px 20px 30px 20px; 
             text-align: center;
-            font-weight: 600;
-            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .header-main h1 {
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+        }
+        .header-main p {
+            font-size: 1.2em;
+            margin-top: 5px;
+            color: var(--grey-text);
+            font-weight: 300;
         }
 
-        .header { 
-            background: var(--wimbledon-purple); 
-            color: var(--wimbledon-white); 
-            padding: 20px 40px; 
-            font-size: 30px; 
-            font-family: 'Playfair Display', serif; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-        }
+        /* CONTAINER */
         .container { 
-            max-width: 1200px; 
-            margin: 30px auto; 
+            max-width: 900px;
+            margin: 40px auto; 
             padding: 0 20px; 
         }
+
+        /* SECTION HEADINGS - Minimal Typography */
         h2 { 
-            color: var(--wimbledon-green); 
-            border-bottom: 3px solid #dcdcdc; 
-            padding-bottom: 8px; 
-            margin-top: 30px; 
-            font-weight: 800; 
+            color: var(--black-text); 
+            padding-bottom: 5px; 
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 700; 
             font-size: 1.8em;
+            letter-spacing: -0.5px;
         }
+        h2 i { color: var(--accent-blue); margin-right: 10px; font-size: 0.8em;}
+
+        /* CARD - Interactive & Clean */
         .card { 
-            background: var(--wimbledon-white); 
-            padding: 25px; 
-            border-radius: 10px; 
-            box-shadow: 0 3px 8px rgba(0,0,0,0.1); 
-            margin-bottom: 25px; 
-            border-left: 5px solid var(--wimbledon-purple); /* Accent border */
+            background: var(--white-card); 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); 
+            margin-bottom: 30px; 
+            border: 1px solid var(--border-light);
+            transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s; 
+        }
+        .card:hover {
+             box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+             transform: translateY(-2px); 
+             border-color: var(--accent-blue);
         }
 
         /* FORMS & INPUTS */
@@ -72,264 +91,283 @@
             gap: 15px; 
             align-items: center; 
             flex-wrap: wrap;
+            margin-top: 20px;
         }
+        label { color: var(--grey-text); font-size: 0.9em; font-weight: 500;}
+
         input[type="text"], input[type="number"], select { 
-            padding: 10px; 
-            border: 1px solid #ccc; 
-            border-radius: 5px; 
-            transition: border-color 0.3s;
+            padding: 10px 12px; 
+            border: 1px solid var(--border-light); 
+            border-radius: 6px;
+            background-color: var(--light-bg);
+            color: var(--black-text);
+            font-family: 'Roboto', sans-serif;
+            flex-grow: 1;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         input[type="text"]:focus, input[type="number"]:focus, select:focus {
-            border-color: var(--wimbledon-purple);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.2);
+            background-color: var(--white-card);
             outline: none;
         }
 
-        /* BUTTONS */
+        /* BUTTONS - Flat and Interactive */
         .btn-base {
             padding: 10px 18px; 
             border: none; 
-            border-radius: 5px; 
+            border-radius: 6px; 
             cursor: pointer; 
-            font-weight: 600; 
-            transition: background-color 0.2s, box-shadow 0.2s;
+            font-weight: 500; 
+            transition: all 0.2s ease-in-out; 
         }
-        .btn-base:hover {
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
+        .btn-base:hover { transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .btn-primary { 
-            background-color: var(--wimbledon-green); 
-            color: var(--wimbledon-white); 
+            background-color: var(--accent-blue); 
+            color: var(--white-card); 
+            font-weight: 500;
         }
-        .btn-primary:hover { background-color: #004d00; }
-        .btn-warning { 
-            background-color: var(--wimbledon-accent); 
-            color: var(--wimbledon-purple); 
-            font-size: 0.9em;
-            padding: 8px 15px;
+        .btn-secondary { 
+            background-color: var(--border-light); 
+            color: var(--black-text); 
         }
-        .btn-warning:hover { background-color: #e0c500; }
         .btn-danger-small { 
-            background-color: var(--wimbledon-purple); 
-            color: white; 
-            padding: 4px 8px; 
+            background-color: var(--danger-red); 
+            color: var(--white-card); 
+            padding: 3px 6px; 
             font-size: 0.7em; 
-            margin-left: 10px;
+            margin-left: 5px;
+            border-radius: 4px;
         }
-        .btn-danger-small:hover { background-color: #330033; }
-        .btn-danger { 
-            background-color: var(--wimbledon-purple); 
-            color: var(--wimbledon-white); 
-            padding: 15px 25px; 
-            text-decoration: none; 
-            display: inline-block;
-            font-weight: 700;
+        .btn-danger-small:hover { 
+            background-color: #cc0000;
         }
-        .btn-danger:hover { background-color: #330033; }
         .btn-base[disabled] { 
-            opacity: 0.6; 
+            opacity: 0.4; 
             cursor: not-allowed; 
+            transform: none;
             box-shadow: none;
         }
 
-        /* RANKING TABLE */
+        /* RANKING TABLE - Thin Horizontal Lines */
         .ranking-table { 
             width: 100%; 
-            border-collapse: collapse; 
-            border-spacing: 0;
-            overflow: hidden;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.95em;
         }
         .ranking-table th { 
-            background-color: var(--wimbledon-green); 
-            color: white; 
-            padding: 12px; 
+            background-color: var(--white-card); 
+            color: var(--grey-text); 
+            padding: 12px 10px; 
             text-align: left; 
-            font-weight: 600;
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-light);
         }
         .ranking-table td { 
-            border: none; 
-            padding: 10px; 
-            background-color: var(--wimbledon-white);
-            border-bottom: 1px solid #dcdcdc; 
+            padding: 12px 10px; 
+            border-bottom: 1px solid var(--border-light); 
+            color: var(--black-text);
         }
-        .ranking-table tr:nth-child(even) td { background-color: var(--wimbledon-light-grey); } 
-        .ranking-table tbody tr:hover td { background-color: #e6e6e6; } 
+        .ranking-table tr:last-child td { border-bottom: none; } 
+        .ranking-table tr:hover td { background-color: var(--light-bg); } 
+        .rank-number { font-weight: 700; color: var(--accent-blue); text-align: center; }
 
         /* MATCH CARDS */
         .match-card { 
-            border: 1px solid #ccc; 
-            padding: 20px; 
-            margin-top: 15px; 
-            border-radius: 5px;
+            border: 1px solid var(--border-light); 
+            padding: 25px; 
+            margin-top: 20px; 
+            border-radius: 12px;
+            background-color: var(--white-card);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: border-color 0.2s; 
         }
+        .match-card:hover { border-color: var(--accent-blue); }
+        
         .match-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            font-weight: 700; 
-            margin-bottom: 10px; 
-            color: var(--wimbledon-purple);
+            font-weight: 500; 
+            color: var(--grey-text);
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
         }
         .status-selesai { 
-            background-color: #e8f5e9; /* Light Green */
-            border-color: var(--wimbledon-green);
+            border-left: 4px solid var(--success-green);
         }
         .status-belum { 
-            background-color: #fffde7; /* Light Gold/Yellow */
-            border-color: var(--wimbledon-accent);
+            border-left: 4px solid var(--accent-blue);
         }
-        
+        .match-info p { margin: 5px 0 15px 0; }
         .score-input-group { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 20px; 
-            align-items: center; 
-            margin-top: 15px; 
+            border-top: 1px solid var(--border-light);
+            padding-top: 15px;
         }
-        .score-input-group label { 
-            font-size: 0.9em; 
-            color: #666; 
-            margin-bottom: 3px; 
-        }
-        .score-input-group input[type="number"] { 
-            width: 80px; 
-            text-align: center;
-        }
+        .team-1-color { color: var(--black-text); font-weight: 700; }
+        .team-2-color { color: var(--grey-text); font-weight: 700; }
 
-        /* BYE & INFO */
+        /* INFO & RECAP */
         .bye-info {
-            background-color: #ffccbc; /* Light Peach */
-            color: var(--wimbledon-purple);
-            padding: 10px 15px;
-            border-radius: 5px;
+            background-color: #e3f2fd; 
+            color: var(--accent-blue); 
+            padding: 15px;
+            border-radius: 8px;
             margin-bottom: 15px;
-            font-weight: 600;
-            border: 1px dashed var(--wimbledon-purple);
+            border: 1px solid #bbdefb;
         }
         .info-note {
-            font-size: 0.8em; 
-            color: #666; 
-            margin-top: 5px;
+            font-size: 0.85em; 
+            color: var(--grey-text); 
+            margin-top: 10px;
         }
-        .team-1-color { color: var(--wimbledon-purple); }
-        .team-2-color { color: var(--wimbledon-green); }
+        
+        /* Recap Final Card - Full Contrast */
+        .recap-card {
+            background-color: var(--black-text); 
+            color: var(--white-card);
+            border: 1px solid var(--black-text);
+            text-align: center;
+            padding: 40px;
+            border-radius: 12px;
+        }
+        .recap-card h2 { color: var(--white-card); }
+        .recap-card p { color: var(--grey-text); font-size: 1.1em;}
+        .recap-card a.btn-base {
+            background-color: var(--white-card); 
+            color: var(--black-text); 
+            padding: 15px 30px; 
+            font-size: 1.1em; 
+            margin-top: 20px; 
+            font-weight: 700; 
+            border: 1px solid var(--border-light);
+            display: inline-block;
+        }
+        .recap-card a.btn-base:hover {
+            background-color: var(--light-bg) !important;
+            color: var(--black-text) !important;
+        }
 
     </style>
 </head>
 <body>
-    <div class="sub-header-haniif">
-        Made by Haniif
-    </div>
     
-    <div class="header">
-        Even Play for Everybody
+    <div class="header-main">
+        <h1>Tennis Manager Pro</h1>
+        <p>Americano / Mexicano. Focused. Efficient.</p>
     </div>
 
     <div class="container">
         
         <div class="card">
-            <h2>👥 Tambah Pemain</h2>
+            <h2><i class="fas fa-user-plus"></i> Add Player</h2>
             <form action="{{ url_for('tambah_pemain') }}" method="post" class="form-inline">
-                <input type="text" name="nama_pemain" placeholder="Nama Pemain Baru" required style="flex-grow: 1;">
-                <button type="submit" class="btn-base btn-primary">➕ Tambah Pemain</button>
+                <input type="text" name="nama_pemain" placeholder="Player Name" required>
+                <button type="submit" class="btn-base btn-primary"><i class="fas fa-plus"></i> Add</button>
             </form>
         </div>
         
         <div class="card">
-            <h2>📊 Peringkat Saat Ini</h2>
+            <h2><i class="fas fa-list-ol"></i> Current Standings</h2>
             {% if peringkat %}
-            <table class="ranking-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Nama</th>
-                        <th style="text-align: center;">Total Poin</th>
-                        <th>W/L/T</th> 
-                        <th>Games Dimainkan</th>
+            <div style="overflow-x: auto;">
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px; text-align: center;">#</th>
+                            <th>Player Name</th>
+                            <th style="text-align: center;">Total Points</th>
+                            <th>W/L/T</th> 
+                            <th>Games</th>
                         </tr>
-                </thead>
-                <tbody>
-                    {% for p in peringkat %}
-                    <tr>
-                        <td>{{ p.Peringkat }}</td> 
-                        <td>
-                            {{ p.Nama }}
-                            <form action="{{ url_for('hapus_pemain', player_id=p.ID) }}" method="post" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus {{ p.Nama }}? Ini akan membatalkan jadwal putaran saat ini.');">
-                                <button type="submit" class="btn-base btn-danger-small">❌</button>
-                            </form>
-                        </td>
-                        <td style="text-align: center; font-weight: 700; color: var(--wimbledon-purple);">{{ p.Total_Poin }}</td>
-                        <td>{{ p.W }}/{{ p.L }}/{{ p.T }}</td> 
-                        <td>{{ p.Games_Played }}</td>
+                    </thead>
+                    <tbody>
+                        {% for p in peringkat %}
+                        <tr>
+                            <td class="rank-number">
+                                {% if p.Peringkat == 1 %} <i class="fas fa-trophy"></i> {% else %} {{ p.Peringkat }} {% endif %}
+                            </td> 
+                            <td>
+                                {{ p.Nama }}
+                                <form action="{{ url_for('hapus_pemain', player_id=p.ID) }}" method="post" style="display: inline;" onsubmit="return confirm('Confirm deletion of {{ p.Nama }}?');">
+                                    <button type="submit" class="btn-base btn-danger-small" title="Delete Player">✕</button>
+                                </form>
+                            </td>
+                            <td style="text-align: center; font-weight: 700; color: var(--accent-blue);">{{ p.Total_Poin }}</td>
+                            <td>{{ p.W }}/{{ p.L }}/{{ p.T }}</td> 
+                            <td>{{ p.Games_Played }}</td>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <p class="info-note" style="color: #666;">* Tombol ❌ berfungsi untuk menghapus pemain. Menghapus pemain akan otomatis membatalkan seluruh jadwal di putaran saat ini.</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="info-note">* Total points are highlighted in Blue.</p>
             {% else %}
-            <p>Belum ada pemain terdaftar. Silakan tambahkan pemain di atas.</p>
+            <p style="color: var(--grey-text);">No players registered.</p>
             {% endif %}
         </div>
         
         <div class="card">
-            <h2>🚀 Atur Putaran Berikutnya (Putaran {{ putaran + 1 }})</h2>
+            <h2><i class="fas fa-cogs"></i> Configure Round {{ putaran + 1 }}</h2>
             <form action="{{ url_for('mulai_putaran') }}" method="post" class="form-inline">
                 
-                <label for="mode_permainan">Mode:</label>
-                <select name="mode_permainan" id="mode_permainan" style="width: auto;">
+                <label>Game Mode:</label>
+                <select name="mode_permainan" id="mode_permainan">
                     <option value="Double" {% if current_mode == 'Double' %} selected {% endif %}>Double (2v2)</option>
                     <option value="Single" {% if peringkat|length < 2 %} disabled {% endif %} {% if current_mode == 'Single' %} selected {% endif %}>Single (1v1)</option>
                 </select>
                 
-                <label for="format_turnamen">Format:</label>
-                <select name="format_turnamen" id="format_turnamen" style="width: auto;">
-                    <option value="Americano" {% if current_format == 'Americano' %} selected {% endif %}>Americano (Acak)</option>
-                    <option value="Mexicano" {% if peringkat|length < 4 %} disabled {% endif %} {% if current_format == 'Mexicano' %} selected {% endif %}>Mexicano (Peringkat)</option>
+                <label>Tournament Format:</label>
+                <select name="format_turnamen" id="format_turnamen">
+                    <option value="Americano" {% if current_format == 'Americano' %} selected {% endif %}>Americano (Random)</option>
+                    <option value="Mexicano" {% if peringkat|length < 4 %} disabled {% endif %} {% if current_format == 'Mexicano' %} selected {% endif %}>Mexicano (Ranked)</option>
                 </select>
                 
-                <label for="num_lapangan">Lapangan:</label>
-                <select name="num_lapangan" id="num_lapangan" style="width: auto;">
+                <label>Number of Courts:</label>
+                <select name="num_lapangan" id="num_lapangan">
                     {% for num in max_lapangan_pilihan %}
-                        <option value="{{ num }}">{{ num }} Lapangan</option>
+                        <option value="{{ num }}">{{ num }} Court(s)</option>
                     {% endfor %}
                 </select>
                 
-                <button type="submit" class="btn-base btn-primary" 
+                <button type="submit" class="btn-base btn-primary"  
                     {% if peringkat|length < 2 %} disabled {% endif %}
-                >Buat Jadwal Putaran {{ putaran + 1 }}</button>
+                ><i class="fas fa-play"></i> Start Round</button>
             </form>
             {% if peringkat|length < 2 %}
-            <p style="color:var(--wimbledon-purple); margin-top:10px;">*Minimal 2 pemain diperlukan untuk mode Single, dan 4 pemain untuk mode Double/Mexicano.</p>
+            <p class="info-note" style="color:var(--danger-red); font-weight: 500;"><i class="fas fa-exclamation-triangle"></i> Minimum 2 players required.</p>
             {% endif %}
         </div>
         
         {% if putaran > 0 %} 
-        <div class="card" style="border-left: 5px solid var(--wimbledon-green);">
-            <h2>📅 Jadwal Putaran {{ putaran }} (Mode: {{ current_mode }} — Format: {{ current_format }})</h2>
+        <div class="card" style="border-left: 4px solid var(--success-green);">
+            <h2><i class="fas fa-calendar-alt"></i> Active Round {{ putaran }}</h2>
             
             {% if pemain_bye %}
                 <div class="bye-info">
-                    👋 **Bye (Tidak Bermain) di Putaran Ini:** {% for nama in pemain_bye %}
-                        {{ nama }}{% if not loop.last %}, {% endif %}
+                    <i class="fas fa-user-clock"></i> **Players on Bye:** {% for nama in pemain_bye %}
+                        **{{ nama }}**{% if not loop.last %}, {% endif %}
                     {% endfor %}
                 </div>
             {% endif %}
 
             {% if can_reshuffle %}
-                <form action="{{ url_for('kocok_ulang') }}" method="post" class="form-inline" style="margin-bottom: 20px; border: none; background: none; padding: 0;">
+                <form action="{{ url_for('kocok_ulang') }}" method="post" style="margin-bottom: 20px;">
                     <input type="hidden" name="num_lapangan_ulang" value="{{ jadwal[0].Lapangan }}">
-                    
-                    <label for="format_turnamen_ulang">Format Kocok Ulang:</label>
-                    <select name="format_turnamen_ulang" id="format_turnamen_ulang" style="width: auto;">
-                         <option value="Americano" {% if current_format == 'Americano' %} selected {% endif %}>Americano (Acak)</option>
-                         <option value="Mexicano" {% if peringkat|length < 4 %} disabled {% endif %} {% if current_format == 'Mexicano' %} selected {% endif %}>Mexicano (Peringkat)</option>
-                    </select>
-
                     <input type="hidden" name="mode_permainan_ulang" value="{{ current_mode }}">
-                    <button type="submit" class="btn-base btn-warning">🔄 Kocok Ulang Putaran Ini! (Belum ada skor masuk)</button>
-                    <p class="info-note">*Akan membuat jadwal baru menggunakan mode dan jumlah lapangan yang sama. Pilih format di atas.</p>
+
+                    <div class="form-inline" style="padding: 0;">
+                        <label>Reshuffle Format:</label>
+                        <select name="format_turnamen_ulang">
+                            <option value="Americano" {% if current_format == 'Americano' %} selected {% endif %}>Americano</option>
+                            <option value="Mexicano" {% if peringkat|length < 4 %} disabled {% endif %} {% if current_format == 'Mexicano' %} selected {% endif %}>Mexicano</option>
+                        </select>
+                        <button type="submit" class="btn-base btn-secondary"><i class="fas fa-sync-alt"></i> Reshuffle</button>
+                    </div>
+                    <p class="info-note">* Available only if no scores have been submitted.</p>
                 </form>
             {% elif jadwal %}
-                <p class="info-note" style="color: var(--wimbledon-green);">*Beberapa pertandingan sudah memiliki skor. Kocok ulang tidak tersedia.</p>
+                <p class="info-note" style="color: var(--success-green); font-weight: 500;"><i class="fas fa-check-circle"></i> Scores have been logged. Schedule is locked.</p>
             {% endif %}
             
             {% if jadwal %}
@@ -337,57 +375,58 @@
                 <form action="{{ url_for('input_skor', match_id=match.Match_ID) }}" method="post" class="match-card {% if match.Status == 'Selesai' %}status-selesai{% else %}status-belum{% endif %}">
                     
                     <div class="match-header">
-                        <span style="color: var(--wimbledon-green);">Lapangan {{ match.Lapangan }}</span>
-                        <span>Status: <strong style="color: {% if match.Status == 'Selesai' %}var(--wimbledon-green){% else %}var(--wimbledon-accent){% endif %};">{{ match.Status }}</strong></span>
+                        <span>Court {{ match.Lapangan }}</span>
+                        <span style="color: {% if match.Status == 'Selesai' %}var(--success-green){% else %}var(--accent-blue){% endif %};">Status: **{{ match.Status }}**</span>
                     </div>
 
-                    {% if match.Mode == 'Double' %}
-                        <p>Pasangan: 
-                            <strong class="team-1-color">({{ match.Pemain_1_A_Nama }} & {{ match.Pemain_1_B_Nama }})</strong> VS 
-                            <strong class="team-2-color">({{ match.Pemain_2_A_Nama }} & {{ match.Pemain_2_B_Nama }})</strong>
-                        </p>
-                    {% else %}
-                        <p>Pertandingan: 
-                            <strong class="team-1-color">{{ match.Pemain_1_A_Nama }}</strong> VS 
-                            <strong class="team-2-color">{{ match.Pemain_2_A_Nama }}</strong>
-                        </p>
-                    {% endif %}
+                    <div class="match-info">
+                        {% if match.Mode == 'Double' %}
+                            <p>
+                                <strong class="team-1-color">Team 1: ({{ match.Pemain_1_A_Nama }} & {{ match.Pemain_1_B_Nama }})</strong> 
+                                <span style="color: var(--grey-text);">vs</span>
+                                <strong class="team-2-color">Team 2: ({{ match.Pemain_2_A_Nama }} & {{ match.Pemain_2_B_Nama }})</strong>
+                            </p>
+                        {% else %}
+                            <p>
+                                <strong class="team-1-color">{{ match.Pemain_1_A_Nama }}</strong> 
+                                <span style="color: var(--grey-text);">vs</span>
+                                <strong class="team-2-color">{{ match.Pemain_2_A_Nama }}</strong>
+                            </p>
+                        {% endif %}
+                    </div>
                     
-                    <div class="score-input-group">
+                    <div class="score-input-group form-inline">
                         <div style="flex: 1;">
-                            <label>Skor Tim 1 (Ungu):</label>
+                            <label>Team 1 Score:</label>
                             <input type="number" name="skor_tim_1" value="{{ match.Poin_Tim_1 }}" min="0" max="30" required>
-                            <span style="font-size: 0.8em; color: var(--wimbledon-purple);">({{ match.Pemain_1_A_Nama }}...)</span>
                         </div>
                         <div style="flex: 1;">
-                            <label>Skor Tim 2 (Hijau):</label>
+                            <label>Team 2 Score:</label>
                             <input type="number" name="skor_tim_2" value="{{ match.Poin_Tim_2 }}" min="0" max="30" required>
-                            <span style="font-size: 0.8em; color: var(--wimbledon-green);">({{ match.Pemain_2_A_Nama }}...)</span>
                         </div>
-                        <button type="submit" class="btn-base btn-primary">Simpan/Update Skor</button>
+                        <button type="submit" class="btn-base btn-primary" style="height: fit-content;"><i class="fas fa-save"></i> Save Score</button>
                     </div>
                     
                 </form>
                 {% endfor %}
             {% else %}
-                <p>Belum ada pertandingan terjadwal untuk putaran ini.</p>
+                <p style="color: var(--grey-text);">No active matches scheduled.</p>
             {% endif %}
         </div>
         {% endif %}
 
-        <div class="card" style="background-color: #f7f7f7; border-left: 5px solid var(--wimbledon-green);">
-            <h2>🛑 Akhiri Turnamen & Rekap Skor</h2>
+        <div class="card recap-card">
+            <h2><i class="fas fa-chart-bar"></i> View Tournament Summary</h2>
             {% if putaran > 0 %}
-                <p>Lihat Peringkat Final turnamen dalam format visual yang elegan.</p>
-                <a href="{{ url_for('rekap_visual') }}" class="btn-base btn-danger">
-                   👑 Game Recap
+                <p>Access your final standings and round-by-round recap.</p>
+                <a href="{{ url_for('rekap_visual') }}" class="btn-base btn-secondary">
+                    <i class="fas fa-eye"></i> View Final Recap
                 </a>
             {% else %}
-                <p>Mulai setidaknya satu putaran untuk mengakhiri turnamen.</p>
+                <p>Start a round to generate the final summary.</p>
             {% endif %}
         </div>
         
     </div>
 </body>
-
 </html>
