@@ -189,7 +189,7 @@ def buat_jadwal(pemain_df, putaran, num_lapangan, mode_permainan, format_turname
                     'Lapangan': lapangan_num,
                     'Mode': mode_permainan,
                     'Pemain_1_A': P1A, 'Pemain_1_B': P1B,
-                    'Pemain_2_A': P2A, 'Pain_2_B': P2B,
+                    'Pemain_2_A': P2A, 'Pemain_2_B': P2B,
                     'Poin_Tim_1': 0, 'Poin_Tim_2': 0,
                     'Status': 'Belum Selesai'
                 }
