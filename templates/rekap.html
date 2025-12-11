@@ -148,7 +148,8 @@
                 <p style="font-size: 1.1em; color: var(--grey-text); margin-bottom: 5px;">Tournament Champion</p>
                 <div class="winner-name">{{ winner.Nama }}</div>
                 <div class="winner-points">
-                    {{ winner.Total_Poin }} Total Points | {{ winner.W }}/{{ winner.L }}/{{ winner.T }} (W/L/T)
+                    {# *** PERBAIKAN KRITIS DI KARTU PEMENANG: MENGGUNAKAN winner.Total_Poin *** #}
+                    **{{ winner.Total_Poin }}** Total Points | {{ winner.W }}/{{ winner.L }}/{{ winner.T }} (W/L/T)
                 </div>
             </div>
 
@@ -169,6 +170,7 @@
                         <tr>
                             <td class="rank-number">{{ p.Peringkat }}</td> 
                             <td>{{ p.Nama }}</td>
+                            {# *** PERBAIKAN KRITIS DI TABEL: MENGGUNAKAN p.Total_Poin *** #}
                             <td class="points-col">{{ p.Total_Poin }}</td> 
                             <td class="wlt-col">{{ p.W }}/{{ p.L }}/{{ p.T }}</td> 
                             <td class="wlt-col">{{ p.Games_Played }}</td>
