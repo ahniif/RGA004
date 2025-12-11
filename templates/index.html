@@ -276,10 +276,9 @@
                         <tr>
                             <th style="width: 30px; text-align: center;">#</th>
                             <th>Player Name</th>
-                            <th style="text-align: center;">Ranking Points (W-L)</th>
+                            <th style="text-align: center;">Total Points (W-L)</th>
                             <th>W/L/T</th> 
-                            <th>Games</th>
-                            <th style="text-align: center;">Cumulative Score</th>
+                            <th>Games Played</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -294,16 +293,15 @@
                                     <button type="submit" class="btn-base btn-danger-small" title="Delete Player">✕</button>
                                 </form>
                             </td>
-                            <td style="text-align: center; font-weight: 700; color: var(--accent-blue);">{{ p.Ranking_Poin }}</td>
+                            <td style="text-align: center; font-weight: 700; color: var(--accent-blue);">{{ p.Ranking_W_L }}</td>
                             <td>{{ p.W }}/{{ p.L }}/{{ p.T }}</td> 
                             <td>{{ p.Games_Played }}</td>
-                            <td style="text-align: center; color: var(--grey-text);">{{ p.Total_Poin }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            <p class="info-note">* Ranking points (W-L) determine the player's rank.</p>
+            <p class="info-note">* Total Points are calculated as Wins - Losses (W-L), with Ties (T) as the tie-breaker.</p>
             {% else %}
             <p style="color: var(--grey-text);">No players registered.</p>
             {% endif %}
