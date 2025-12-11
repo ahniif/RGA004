@@ -1,170 +1,192 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rekap Final Turnamen - Wimbledon</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Tournament Recap - PRO EDITION</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* WIMBLEDON PALETTE */
+        /* PRO EDITION PALETTE */
         :root {
-            --wimbledon-purple: #460046; 
-            --wimbledon-green: #006400; 
-            --wimbledon-white: #ffffff;
-            --wimbledon-light-grey: #f0f0f0;
-            --wimbledon-accent: #ffd700; 
+            --light-bg: #f5f5f7; 
+            --white-card: #ffffff; 
+            --black-text: #1d1d1f; 
+            --grey-text: #6e6e73; 
+            --border-light: #d2d2d7; 
+            --accent-blue: #0071e3; 
+            --success-green: #34c759;
+            --medal-gold: #FFD700;
         }
 
+        /* BASE & LAYOUT */
         body { 
             font-family: 'Roboto', sans-serif; 
             margin: 0; 
-            background-color: var(--wimbledon-light-grey); 
-            color: #1a1a1a;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 20px 0;
-            min-height: 100vh;
-        }
-        .rekap-container { 
-            width: 90%; 
-            max-width: 450px; 
-            background: var(--wimbledon-white); 
-            padding: 30px 20px; 
-            border-radius: 5px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            border: 3px solid var(--wimbledon-purple); 
-        }
-        .title-box {
-            text-align: center;
-            padding: 10px;
-            background-color: var(--wimbledon-purple); 
-            border-radius: 0;
-            color: white;
-            border-bottom: 5px solid var(--wimbledon-green);
+            background-color: var(--light-bg); 
+            color: var(--black-text); 
+            line-height: 1.5;
+            padding-bottom: 50px;
         }
         
-        .personal-note {
-            color: var(--wimbledon-accent); /* Gold */
-            font-size: 0.8em;
-            margin-bottom: 5px;
-            font-weight: 700;
+        /* HEADER - Dominan dan Kuat */
+        .header-recap { 
+            background-color: var(--black-text); 
+            color: var(--white-card); 
+            padding: 80px 20px 60px 20px; 
+            text-align: center;
         }
-
-        h1 { 
-            font-family: 'Playfair Display', serif; 
-            font-size: 2.2em; 
-            margin: 0; 
-            font-weight: 900;
-        }
-        h3 { 
-            color: #ddd;
-            font-size: 1em; 
-            margin-top: 5px;
-            font-weight: 700;
-        }
-        .rekap-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-size: 0.9em;
-            background: var(--wimbledon-white);
-            border: 1px solid #ccc;
-        }
-        .rekap-table th, .rekap-table td { 
-            padding: 12px 8px; 
-            text-align: left; 
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .rekap-table th { 
-            background-color: var(--wimbledon-green); 
-            color: var(--wimbledon-white); 
+        .header-recap h1 {
+            font-size: 3.5em;
+            margin: 0;
             font-weight: 700; 
+            letter-spacing: -1px;
         }
-        .rekap-table tbody tr:nth-child(even) { background-color: var(--wimbledon-light-grey); }
-
-        /* MEDALS & RANKS */
-        .rank-1, .rank-2, .rank-3 {
-            font-weight: 700;
-            font-size: 1.05em;
-        }
-        /* Top 3 coloring */
-        .rank-1 td { background-color: #fffacd; color: #b8860b; } /* Light Gold */
-        .rank-2 td { background-color: #ededed; color: #555; } /* Light Silver */
-        .rank-3 td { background-color: #e6f0e6; color: #8b4513; } /* Light Bronze/Green */
-        
-        .rank-1 td:first-child, .rank-2 td:first-child, .rank-3 td:first-child { 
-             font-family: 'Playfair Display', serif;
-             font-weight: 900;
-             font-size: 1.2em;
+        .header-recap p {
+            font-size: 1.3em;
+            margin-top: 10px;
+            color: var(--grey-text);
+            font-weight: 300;
         }
 
-        .poin-cell {
+        /* CONTAINER */
+        .container { 
+            max-width: 900px;
+            margin: -40px auto 0 auto; /* Overlap ke header hitam */
+            padding: 0 20px; 
+        }
+
+        /* WINNER CARD - Spotlight Effect */
+        .winner-card {
+            background: linear-gradient(135deg, var(--white-card) 60%, #e0e0e3 100%);
+            padding: 40px; 
+            border-radius: 18px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+            margin-bottom: 30px; 
             text-align: center;
+            border: 3px solid var(--medal-gold);
+            position: relative;
+        }
+        .winner-card h2 {
+            color: var(--black-text);
+            font-size: 2.5em;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .trophy-icon {
+            font-size: 3em;
+            color: var(--medal-gold);
+            margin-bottom: 10px;
+        }
+        .winner-name {
+            font-size: 2em;
             font-weight: 700;
-            color: var(--wimbledon-purple);
+            color: var(--accent-blue);
         }
-        .wlt-cell {
-             font-size: 0.9em;
-             color: var(--wimbledon-green);
+        .winner-points {
+            font-size: 1.5em;
+            color: var(--grey-text);
+            margin-top: 5px;
         }
+
+        /* RANKING TABLE - Clean & Final */
+        .ranking-table-final { 
+            width: 100%; 
+            border-collapse: collapse;
+            margin-top: 30px;
+            background-color: var(--white-card);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); 
+        }
+        .ranking-table-final th, .ranking-table-final td {
+            padding: 15px 20px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border-light);
+        }
+        .ranking-table-final th { 
+            background-color: #ededed;
+            color: var(--grey-text); 
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+        }
+        .ranking-table-final tr:last-child td { border-bottom: none; } 
+        .ranking-table-final .rank-number { font-weight: 700; color: var(--black-text); text-align: center; width: 50px; }
+        .ranking-table-final .points-col { font-weight: 700; color: var(--accent-blue); text-align: center; }
+        .ranking-table-final .wlt-col { color: var(--grey-text); }
+        .ranking-table-final tr:nth-child(2) .rank-number { color: var(--medal-gold); } /* Peringkat 2 */
+        .ranking-table-final tr:nth-child(3) .rank-number { color: #C0C0C0; } /* Peringkat 3 */
+
+        /* Back Button */
         .back-link {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 0.9em;
-        }
-        .back-link a {
-            color: var(--wimbledon-purple);
+            display: inline-block;
+            margin-top: 30px;
+            font-size: 1em;
+            color: var(--accent-blue);
             text-decoration: none;
-            font-weight: 700;
+            font-weight: 500;
+            transition: opacity 0.2s;
         }
-        .screenshot-info {
-            background-color: var(--wimbledon-green);
-            color: white;
-            padding: 10px;
-            border-radius: 0;
-            text-align: center;
-            font-weight: 600;
-        }
+        .back-link:hover { opacity: 0.8; }
     </style>
 </head>
 <body>
-    <div class="rekap-container">
-        
-        <div class="title-box">
-                        
-            <h1>CHAMPIONSHIP RESULTS</h1>
-            <h3>🏆 Tenis Scoring 🏆</h3>
-        </div>
+    
+    <div class="header-recap">
+        <h1>Final Standings</h1>
+        <p>Tournament Results Summary</p>
+    </div>
 
-        <table class="rekap-table">
-            <thead>
-                <tr>
-                    <th style="width: 10%;">Rank</th>
-                    <th style="width: 40%;">Players</th>
-                    <th style="width: 20%; text-align: center;">Points</th>
-                    <th style="width: 30%;">W/L/T</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in rekap %}
-                <tr class="rank-{{ p.Peringkat if p.Peringkat <= 3 }}">
-                    <td>{{ p.Peringkat }}</td>
-                    <td>{{ p.Nama }}</td>
-                    <td class="poin-cell">{{ p.Total_Poin }}</td>
-                    <td class="wlt-cell">{{ p.W }}/{{ p.L }}/{{ p.T }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="container">
         
-        
+        {% if rekap %}
+            {% set winner = rekap[0] %}
+            <div class="winner-card">
+                <div class="trophy-icon"><i class="fas fa-trophy"></i></div>
+                <p style="font-size: 1.1em; color: var(--grey-text); margin-bottom: 5px;">Tournament Champion</p>
+                <div class="winner-name">{{ winner.Nama }}</div>
+                <div class="winner-points">{{ winner.Total_Poin }} Total Points</div>
+            </div>
 
-        <div class="back-link">
-            <a href="{{ url_for('index') }}">← Kembali ke Dashboard</a>
-        </div>
+            <h2 style="font-size: 2em; margin-bottom: 15px; text-align: center;">Player Rankings</h2>
+            <div style="overflow-x: auto;">
+                <table class="ranking-table-final">
+                    <thead>
+                        <tr>
+                            <th class="rank-number">Rank</th>
+                            <th>Player</th>
+                            <th class="points-col" style="text-align: center;">Total Points</th>
+                            <th class="wlt-col">W/L/T</th> 
+                            <th class="wlt-col">Games Played</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in rekap %}
+                        <tr>
+                            <td class="rank-number">{{ p.Peringkat }}</td> 
+                            <td>{{ p.Nama }}</td>
+                            <td class="points-col">{{ p.Total_Poin }}</td>
+                            <td class="wlt-col">{{ p.W }}/{{ p.L }}/{{ p.T }}</td> 
+                            <td class="wlt-col">{{ p.Games_Played }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        {% else %}
+            <div class="card" style="text-align: center; margin-top: 30px;">
+                <h2 style="font-size: 1.5em; color: var(--grey-text);">No Data Available</h2>
+                <p>Please complete a round to view the summary.</p>
+            </div>
+        {% endif %}
+
+        <a href="{{ url_for('index') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Manager
+        </a>
+        
     </div>
 </body>
 </html>
