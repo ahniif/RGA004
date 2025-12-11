@@ -28,7 +28,6 @@ if 'next_match_id' not in globals():
 
 if 'last_config' not in globals():
     last_config = {
-        # Default value disetel Double dan Americano, agar opsi di HTML bisa terisi
         'num_lapangan': 1,
         'format_turnamen': 'Americano', 
         'mode_permainan': 'Double'
@@ -49,8 +48,7 @@ def get_next_match_id():
 
 def hitung_wlt(pemain_df, jadwal_df):
     """
-    Menghitung Win/Lose/Tie berdasarkan semua pertandingan Selesai.
-    Revisi: Memastikan kolom direset sebelum perhitungan baru.
+    Menghitung Win/Lose/Tie KUMULATIF berdasarkan semua pertandingan Selesai.
     """
     
     # Inisialisasi/Reset kolom W/L/T untuk perhitungan baru
@@ -62,12 +60,10 @@ def hitung_wlt(pemain_df, jadwal_df):
     jadwal_selesai = jadwal_df[jadwal_df['Status'] == 'Selesai']
     
     for _, match in jadwal_selesai.iterrows():
-        # Menghapus 'None' (yang mungkin berupa NaN dari pandas) dan memastikan hanya ID yang valid
-        # Pemain Tim 1: Pemain_1_A dan Pemain_1_B (jika Double)
+        # Memastikan hanya ID yang valid
         pemain_tim_1 = [match['Pemain_1_A'], match['Pemain_1_B']] if match['Mode'] == 'Double' else [match['Pemain_1_A']]
         pemain_tim_1 = [p_id for p_id in pemain_tim_1 if pd.notna(p_id) and p_id in pemain_df.index]
         
-        # Pemain Tim 2: Pemain_2_A dan Pemain_2_B (jika Double)
         pemain_tim_2 = [match['Pemain_2_A'], match['Pemain_2_B']] if match['Mode'] == 'Double' else [match['Pemain_2_A']]
         pemain_tim_2 = [p_id for p_id in pemain_tim_2 if pd.notna(p_id) and p_id in pemain_df.index]
 
@@ -96,15 +92,12 @@ def hitung_wlt(pemain_df, jadwal_df):
 def buat_jadwal(pemain_df, putaran, num_lapangan, mode_permainan, format_turnamen):
     """
     Membuat jadwal baru dengan logika prioritas.
-    Prioritas: Total_Bye terbanyak (DESC) > Games_Played paling sedikit (ASC) > Total_Poin (DESC) > Random_Tie_Breaker (ASC).
     """
     if 'Total_Bye' not in pemain_df.columns:
         pemain_df['Total_Bye'] = 0
-    # MODIFIKASI: Pastikan Games_Played ada
     if 'Games_Played' not in pemain_df.columns:
         pemain_df['Games_Played'] = 0
             
-    # PERUBAHAN KRUSIAL: Tambahkan kolom tie-breaker acak
     pemain_df['Random_Tie_Breaker'] = [random.random() for _ in range(len(pemain_df))]
             
     pemain_df['Rank_Poin'] = pemain_df['Total_Poin'].rank(method='min', ascending=False)
@@ -132,7 +125,7 @@ def buat_jadwal(pemain_df, putaran, num_lapangan, mode_permainan, format_turname
     
     # --- AMERICANO (Acak) ---
     if format_turnamen == 'Americano':
-        random.shuffle(pemain_bermain) # Acak di antara pemain yang sudah diprioritaskan
+        random.shuffle(pemain_bermain) 
         
         for i in range(0, len(pemain_bermain), players_per_court):
             grup_pemain = pemain_bermain[i:i+players_per_court]
@@ -161,7 +154,6 @@ def buat_jadwal(pemain_df, putaran, num_lapangan, mode_permainan, format_turname
     # --- MEXICANO (Peringkat) ---
     elif format_turnamen == 'Mexicano':
         
-        # Urutkan ulang pemain yang bermain berdasarkan Total_Poin (untuk pairing High vs Low)
         pemain_bermain_df_sorted = pemain_df.loc[pemain_bermain].sort_values(
             by='Total_Poin', ascending=False
         ).index.tolist()
@@ -170,24 +162,20 @@ def buat_jadwal(pemain_df, putaran, num_lapangan, mode_permainan, format_turname
         peringkat_tinggi = pemain_bermain_df_sorted[:mid_point]
         peringkat_rendah = pemain_bermain_df_sorted[mid_point:]
         
-        # Kocok di dalam masing-masing kelompok (High vs Low)
         random.shuffle(peringkat_tinggi)
         random.shuffle(peringkat_rendah)
         
         if mode_permainan == 'Double':
             
-            # Menghitung jumlah match yang benar (Total High Players / 2)
             num_matches = len(peringkat_tinggi) // 2 
             
             for i in range(num_matches):
                 
-                # Ambil 2 pemain High dan 2 pemain Low, lalu bagi timnya
                 H1 = peringkat_tinggi.pop(0)
                 H2 = peringkat_tinggi.pop(0)
                 L1 = peringkat_rendah.pop(0)
                 L2 = peringkat_rendah.pop(0)
 
-                # Pair: H1 & L1 vs H2 & L2
                 P1A, P1B, P2A, P2B = H1, L1, H2, L2 
                 
                 lapangan_num = i + 1
@@ -237,25 +225,21 @@ def index():
 
     if 'Total_Bye' not in pemain_df.columns:
         pemain_df['Total_Bye'] = 0
-    # MODIFIKASI: Inisialisasi Games_Played
     if 'Games_Played' not in pemain_df.columns:
         pemain_df['Games_Played'] = 0
     
-    # Inisialisasi kolom W, L, T jika tidak ada sebelum memanggil hitung_wlt
     for col in ['W', 'L', 'T']:
           if col not in pemain_df.columns:
               pemain_df[col] = 0
 
     peringkat = pd.DataFrame()
     if not pemain_df.empty:
-        # Panggil fungsi W/L/T
         pemain_df_temp = hitung_wlt(pemain_df.copy(), jadwal_df.copy())
         
         peringkat = pemain_df_temp.copy()
         peringkat['Peringkat'] = peringkat['Total_Poin'].rank(method='min', ascending=False).astype(int)
         peringkat = peringkat.sort_values(by=['Peringkat', 'Total_Poin'], ascending=[True, False])
         
-        # PERBAIKAN: Mengubah Index 'ID' menjadi Kolom 'ID'
         peringkat = peringkat.reset_index(names=['ID'])
         
 
@@ -263,26 +247,21 @@ def index():
     jadwal_untuk_template = []
     
     can_reshuffle = False
-    # Menggunakan last_config untuk default/putaran baru
     current_mode = last_config['mode_permainan'] 
     current_format = last_config['format_turnamen'] 
     pemain_bye = []
 
     if not jadwal_saat_ini.empty:
-        # Jika jadwal ada, update mode dan format dari data jadwal yang sebenarnya
+        
         current_mode = jadwal_saat_ini.loc[0, 'Mode']
-        # MODIFIKASI: current_format diambil dari last_config yang selalu diupdate
         current_format = last_config['format_turnamen'] 
         players_per_court = 4 if current_mode == 'Double' else 2
         
-        # 1. Tentukan Pemain yang Dapat Bye
         if 'Rank_Poin' not in pemain_df.columns:
             pemain_df['Rank_Poin'] = pemain_df['Total_Poin'].rank(method='min', ascending=False)
                 
-        # Gunakan logika sorting baru untuk menentukan pemain yang seharusnya bermain
-        # Tambahkan Random_Tie_Breaker ke sorting untuk konsistensi dengan buat_jadwal
         if 'Random_Tie_Breaker' not in pemain_df.columns:
-             pemain_df['Random_Tie_Breaker'] = 0 # Inisialisasi sementara
+             pemain_df['Random_Tie_Breaker'] = 0 
             
         pemain_potensial_idx = pemain_df.sort_values(
             by=['Total_Bye', 'Games_Played', 'Total_Poin', 'Random_Tie_Breaker'], 
@@ -293,26 +272,17 @@ def index():
         pemain_yang_bermain_id = set()
         for col in id_cols:
             if col in jadwal_saat_ini.columns:
-                # Mengambil ID pemain yang ada di jadwal
                 pemain_yang_bermain_id.update(jadwal_saat_ini[col].dropna().tolist())
 
-        # Pemain bye adalah pemain yang diprioritaskan untuk bermain
-        # tetapi tidak ada di jadwal yang dibuat (pemain yang "tertinggal" di daftar sort)
-        
-        # Ambil daftar pemain yang seharusnya bermain (sesuai prioritas)
-        players_per_court = 4 if current_mode == 'Double' else 2
         num_courts_used = len(jadwal_saat_ini)
         max_players_scheduled = num_courts_used * players_per_court
         
-        # Jumlah pemain yang harusnya terjadwal (pemain yang paling diprioritaskan)
         pemain_ranked = pemain_potensial_idx[:max_players_scheduled + players_per_court]
         
-        # Pemain yang Bye adalah pemain yang paling diprioritaskan tetapi tidak masuk dalam jadwal (selisih)
         pemain_bye_ids = [id for id in pemain_ranked if id not in pemain_yang_bermain_id]
         
         pemain_bye = pemain_df.loc[pemain_bye_ids]['Nama'].tolist()
         
-        # 2. Logika Jadwal dan Reshuffle
         if (jadwal_saat_ini['Status'] == 'Belum Selesai').all():
             can_reshuffle = True
             
@@ -330,8 +300,35 @@ def index():
                     )
                     jadwal_dengan_nama = jadwal_dengan_nama.rename(columns={'Nama': f'{col}_Nama'})
 
-            jadwal_untuk_template = jadwal_dengan_nama.to_dict('records')
-    
+            # --- LOGIKA STATUS W/L/T PER MATCH (BARU) ---
+            def hitung_status_match(poin1, poin2):
+                if poin1 > poin2: return 'W'
+                if poin2 > poin1: return 'L'
+                return 'T'
+
+            for index, row in jadwal_dengan_nama.iterrows():
+                
+                match_data = row.to_dict()
+                
+                if row['Status'] == 'Selesai':
+                    poin1, poin2 = row['Poin_Tim_1'], row['Poin_Tim_2']
+                    
+                    status_tim_1 = hitung_status_match(poin1, poin2)
+                    status_tim_2 = hitung_status_match(poin2, poin1)
+                    
+                    # Konversi status ke format W/L/T (Contoh: Menang = 1/0/0)
+                    wlt_tim_1 = {'W': '1/0/0', 'L': '0/1/0', 'T': '0/0/1'}.get(status_tim_1, '-')
+                    wlt_tim_2 = {'W': '1/0/0', 'L': '0/1/0', 'T': '0/0/1'}.get(status_tim_2, '-')
+                    
+                    match_data['Status_Tim_1'] = wlt_tim_1
+                    match_data['Status_Tim_2'] = wlt_tim_2
+                else:
+                    match_data['Status_Tim_1'] = '-'
+                    match_data['Status_Tim_2'] = '-'
+                
+                jadwal_untuk_template.append(match_data)
+            # ----------------------------------------------
+            
     if putaran_saat_ini == 0:
         pemain_bye = []
 
@@ -355,7 +352,6 @@ def tambah_pemain():
     
     if nama and len(pemain_df) < MAX_PEMAIN:
         new_id = get_next_player_id()
-        # Inisialisasi Games_Played
         new_row = pd.DataFrame([{'ID': new_id, 'Nama': nama, 'Total_Poin': 0, 'Games_Played': 0, 'Total_Bye': 0, 'W': 0, 'L': 0, 'T': 0}])
         new_row = new_row.set_index('ID')
         pemain_df = pd.concat([pemain_df, new_row])
@@ -367,16 +363,12 @@ def hapus_pemain(player_id):
     global pemain_df, jadwal_df, putaran_saat_ini
     
     if player_id in pemain_df.index:
-        # Hapus pemain dari DataFrame pemain
         pemain_df.drop(player_id, inplace=True)
         
-        # Hapus pemain dari jadwal yang BELUM SELESAI
         cols_to_check = ['Pemain_1_A', 'Pemain_1_B', 'Pemain_2_A', 'Pemain_2_B']
         
-        # Hanya putaran saat ini yang mungkin perlu dikoreksi
         jadwal_saat_ini_idx = jadwal_df[jadwal_df['Putaran'] == putaran_saat_ini].index
         
-        # Hapus match jika pemain terlibat
         indices_to_drop = []
         for idx in jadwal_saat_ini_idx:
             is_involved = False
@@ -391,7 +383,6 @@ def hapus_pemain(player_id):
         if indices_to_drop:
             jadwal_df.drop(indices_to_drop, inplace=True)
         
-        # Jika semua match di putaran saat ini terhapus, kembalikan putaran_saat_ini ke putaran sebelumnya
         if putaran_saat_ini > 0 and jadwal_df[jadwal_df['Putaran'] == putaran_saat_ini].empty:
             putaran_saat_ini -= 1
 
@@ -411,17 +402,14 @@ def mulai_putaran():
     if len(pemain_df) < players_per_court:
         return redirect(url_for('index')) 
 
-    # Hapus jadwal putaran yang belum selesai
     jadwal_df = jadwal_df[jadwal_df['Status'] == 'Selesai'] 
     
     putaran_saat_ini += 1
     
-    # MODIFIKASI: Simpan konfigurasi yang dipilih
     last_config['num_lapangan'] = num_lapangan
     last_config['format_turnamen'] = format_turnamen
     last_config['mode_permainan'] = mode_permainan
     
-    # Pastikan pemain_df memiliki Games_Played dan Total_Bye sebelum masuk ke buat_jadwal
     if 'Games_Played' not in pemain_df.columns: pemain_df['Games_Played'] = 0
     if 'Total_Bye' not in pemain_df.columns: pemain_df['Total_Bye'] = 0
 
@@ -442,19 +430,16 @@ def kocok_ulang():
     
     if not jadwal_saat_ini.empty and (jadwal_saat_ini['Status'] == 'Belum Selesai').all():
         
-        # Hapus jadwal putaran saat ini yang belum selesai
         jadwal_df = jadwal_df[jadwal_df['Putaran'] != putaran_saat_ini]
 
         num_lapangan = len(jadwal_saat_ini['Lapangan'].unique()) 
         format_turnamen = request.form.get('format_turnamen_ulang')
         mode_permainan = request.form.get('mode_permainan_ulang') 
         
-        # MODIFIKASI: Update last_config dengan format baru setelah kocok ulang
         last_config['num_lapangan'] = num_lapangan
         last_config['format_turnamen'] = format_turnamen
         last_config['mode_permainan'] = mode_permainan
 
-        # Pastikan pemain_df memiliki Games_Played dan Total_Bye sebelum masuk ke buat_jadwal
         if 'Games_Played' not in pemain_df.columns: pemain_df['Games_Played'] = 0
         if 'Total_Bye' not in pemain_df.columns: pemain_df['Total_Bye'] = 0
         
@@ -483,7 +468,6 @@ def input_skor(match_id):
             
             match_row = jadwal_df.loc[match_id]
             
-            # Memastikan Pemain_1_B/Pemain_2_B adalah ID atau None
             p1b = match_row.get('Pemain_1_B')
             p2b = match_row.get('Pemain_2_B')
             
@@ -497,8 +481,7 @@ def input_skor(match_id):
                 poin_lama_tim_1 = match_row['Poin_Tim_1']
                 poin_lama_tim_2 = match_row['Poin_Tim_2']
                 
-                # REVISI Games_Played: Kurangi Games_Played LAMA (1 per match)
-                
+                # Kurangi Poin dan Games Played (1)
                 for id in pemain_ids_team_1:
                     if id in pemain_df.index:
                         pemain_df.loc[id, 'Total_Poin'] -= poin_lama_tim_1
@@ -524,7 +507,7 @@ def input_skor(match_id):
             # 4. Tambah Games_Played Baru (1 per match/round)
             for id in pemain_ids_all:
                  if id in pemain_df.index:
-                     pemain_df.loc[id, 'Games_Played'] += 1 # Setiap player di match ini bertambah 1 Games_Played
+                     pemain_df.loc[id, 'Games_Played'] += 1 
                     
     
     # --- Otomatis Buat Jadwal Putaran Berikutnya ---
@@ -532,8 +515,7 @@ def input_skor(match_id):
     
     if not current_round_matches.empty and (current_round_matches['Status'] == 'Selesai').all():
         
-        # Hapus semua jadwal putaran yang BELUM SELESAI (hanya putaran saat ini)
-        jadwal_df = jadwal_df[jadwal_df['Putaran'] < putaran_saat_ini] # Hapus semua putaran setelah putaran saat ini (jika ada)
+        jadwal_df = jadwal_df[jadwal_df['Putaran'] < putaran_saat_ini] 
         
         putaran_saat_ini += 1
         
@@ -541,36 +523,28 @@ def input_skor(match_id):
         format_turnamen = last_config['format_turnamen']
         mode_permainan = last_config['mode_permainan']
         
-        # INCREMENT Total_Bye untuk pemain yang "Bye" di putaran sebelumnya
         prev_putaran = putaran_saat_ini - 1
         
-        # 1. Tentukan pemain yang seharusnya bermain di putaran sebelumnya (sesuai prioritas)
         players_per_court = 4 if last_config['mode_permainan'] == 'Double' else 2
         num_courts = last_config['num_lapangan']
         max_players_to_be_scheduled = num_courts * players_per_court
         
-        # Pastikan pemain_df memiliki semua kolom untuk sorting
         if 'Games_Played' not in pemain_df.columns: pemain_df['Games_Played'] = 0
         if 'Total_Bye' not in pemain_df.columns: pemain_df['Total_Bye'] = 0
         if 'Random_Tie_Breaker' not in pemain_df.columns: pemain_df['Random_Tie_Breaker'] = 0
         
-        # Logika sorting harus sama persis dengan yang ada di buat_jadwal
         pemain_potensial_prev = pemain_df.sort_values(
             by=['Total_Bye', 'Games_Played', 'Total_Poin', 'Random_Tie_Breaker'], 
             ascending=[False, True, False, True] 
         ).index.tolist()
         
-        # Jumlah pemain yang diprioritaskan untuk dipertimbangkan bermain 
         pemain_potensial_prev = pemain_potensial_prev[:max_players_to_be_scheduled + players_per_court]
         
-        # 2. Ambil pemain yang BENAR-BENAR bermain di putaran sebelumnya
         prev_matches = jadwal_df[jadwal_df['Putaran'] == prev_putaran]
         players_who_played_prev = set(prev_matches[['Pemain_1_A', 'Pemain_1_B', 'Pemain_2_A', 'Pemain_2_B']].stack().dropna().tolist())
         
-        # 3. Pemain yang Bye adalah pemain yang diprioritaskan (pemain_potensial_prev) tapi tidak bermain
         players_on_bye_prev = [id for id in pemain_potensial_prev if id not in players_who_played_prev]
         
-        # 4. Increment Total_Bye
         pemain_df.loc[players_on_bye_prev, 'Total_Bye'] += 1
         
         
@@ -602,7 +576,6 @@ def rekap_visual():
         'W', 'L', 'T', 
         'Games_Played'
     ]
-    # Perbaikan: Reset index saat memilih kolom
     rekap_df = pemain_final.reset_index()
     rekap_df = rekap_df[kolom_rekap].reset_index(drop=True)
     
