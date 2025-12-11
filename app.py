@@ -1,632 +1,395 @@
-import random
-import pandas as pd
-from flask import Flask, render_template, request, redirect, url_for, Response
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Americano/Mexicano Tenis Manager - WIMBLEDON EDITION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* WIMBLEDON PALETTE */
+        :root {
+            --wimbledon-purple: #460046; /* Deep Purple */
+            --wimbledon-green: #006400;  /* Dark Green */
+            --wimbledon-white: #ffffff;
+            --wimbledon-light-grey: #f0f0f0;
+            --wimbledon-accent: #ffd700; /* Gold for highlight */
+        }
 
-# --- Konfigurasi Turnamen ---
-MAX_PEMAIN = 32
-
-# Inisialisasi Aplikasi Flask
-app = Flask(__name__)
-
-# --- Manajemen Data dengan Pandas (Simulasi Database) ---
-if 'pemain_df' not in globals():
-    pemain_df = pd.DataFrame(columns=['ID', 'Nama', 'Total_Poin', 'Games_Played', 'Total_Bye', 'W', 'L', 'T'])
-    pemain_df = pemain_df.set_index('ID')
-
-if 'jadwal_df' not in globals():
-    jadwal_df = pd.DataFrame(columns=['Putaran', 'Lapangan', 'Mode', 'Pemain_1_A', 'Pemain_1_B', 'Pemain_2_A', 'Pemain_2_B', 'Poin_Tim_1', 'Poin_Tim_2', 'Status'])
-    jadwal_df.index.name = 'Match_ID' 
-
-if 'next_player_id' not in globals():
-    next_player_id = 1
-
-if 'putaran_saat_ini' not in globals():
-    putaran_saat_ini = 0
-
-if 'next_match_id' not in globals():
-    next_match_id = 1
-
-if 'last_config' not in globals():
-    last_config = {
-        # Default value disetel Double dan Americano, agar opsi di HTML bisa terisi
-        'num_lapangan': 1,
-        'format_turnamen': 'Americano', 
-        'mode_permainan': 'Double'
-    }
-
-# --- Fungsi Utility ---
-def get_next_player_id():
-    global next_player_id
-    current_id = next_player_id
-    next_player_id += 1
-    return current_id
-
-def get_next_match_id():
-    global next_match_id
-    current_id = next_match_id
-    next_match_id += 1
-    return current_id
-
-def hitung_wlt(pemain_df, jadwal_df):
-    """Menghitung Win/Lose/Tie berdasarkan semua pertandingan Selesai."""
-    
-    # Inisialisasi kolom W/L/T jika belum ada
-    if 'W' not in pemain_df.columns:
-        pemain_df['W'] = 0
-        pemain_df['L'] = 0
-        pemain_df['T'] = 0
-
-    # Reset nilai W/L/T untuk perhitungan baru
-    pemain_df['W'] = 0
-    pemain_df['L'] = 0
-    pemain_df['T'] = 0
-    
-    jadwal_selesai = jadwal_df[jadwal_df['Status'] == 'Selesai']
-    
-    for _, match in jadwal_selesai.iterrows():
-        p1a, p1b = match['Pemain_1_A'], match['Pemain_1_B']
-        p2a, p2b = match['Pemain_2_A'], match['Pemain_2_B']
-        poin1, poin2 = match['Poin_Tim_1'], match['Poin_Tim_2']
+        /* BASE & LAYOUT */
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            margin: 0; 
+            background-color: var(--wimbledon-light-grey); 
+            color: #333; 
+            line-height: 1.6;
+        }
         
-        pemain_tim_1 = [p1a, p1b] if match['Mode'] == 'Double' else [p1a]
-        pemain_tim_2 = [p2a, p2b] if match['Mode'] == 'Double' else [p2a]
+        /* HEADER KECIL BARU UNTUK HANIFF */
+        .sub-header-haniif {
+            background-color: var(--wimbledon-green); /* Green bar */
+            color: var(--wimbledon-accent); /* Gold text */
+            padding: 5px 40px;
+            font-size: 0.85em;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .header { 
+            background: var(--wimbledon-purple); 
+            color: var(--wimbledon-white); 
+            padding: 20px 40px; 
+            font-size: 30px; 
+            font-family: 'Playfair Display', serif; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 30px auto; 
+            padding: 0 20px; 
+        }
+        h2 { 
+            color: var(--wimbledon-green); 
+            border-bottom: 3px solid #dcdcdc; 
+            padding-bottom: 8px; 
+            margin-top: 30px; 
+            font-weight: 800; 
+            font-size: 1.8em;
+        }
+        .card { 
+            background: var(--wimbledon-white); 
+            padding: 25px; 
+            border-radius: 10px; 
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1); 
+            margin-bottom: 25px; 
+            border-left: 5px solid var(--wimbledon-purple); /* Accent border */
+        }
+
+        /* FORMS & INPUTS */
+        .form-inline { 
+            display: flex; 
+            gap: 15px; 
+            align-items: center; 
+            flex-wrap: wrap;
+        }
+        input[type="text"], input[type="number"], select { 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: var(--wimbledon-purple);
+            outline: none;
+        }
+
+        /* BUTTONS */
+        .btn-base {
+            padding: 10px 18px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+        .btn-base:hover {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .btn-primary { 
+            background-color: var(--wimbledon-green); 
+            color: var(--wimbledon-white); 
+        }
+        .btn-primary:hover { background-color: #004d00; }
+        .btn-warning { 
+            background-color: var(--wimbledon-accent); 
+            color: var(--wimbledon-purple); 
+            font-size: 0.9em;
+            padding: 8px 15px;
+        }
+        .btn-warning:hover { background-color: #e0c500; }
+        .btn-danger-small { 
+            background-color: var(--wimbledon-purple); 
+            color: white; 
+            padding: 4px 8px; 
+            font-size: 0.7em; 
+            margin-left: 10px;
+        }
+        .btn-danger-small:hover { background-color: #330033; }
+        .btn-danger { 
+            background-color: var(--wimbledon-purple); 
+            color: var(--wimbledon-white); 
+            padding: 15px 25px; 
+            text-decoration: none; 
+            display: inline-block;
+            font-weight: 700;
+        }
+        .btn-danger:hover { background-color: #330033; }
+        .btn-base[disabled] { 
+            opacity: 0.6; 
+            cursor: not-allowed; 
+            box-shadow: none;
+        }
+
+        /* RANKING TABLE */
+        .ranking-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            border-spacing: 0;
+            overflow: hidden;
+        }
+        .ranking-table th { 
+            background-color: var(--wimbledon-green); 
+            color: white; 
+            padding: 12px; 
+            text-align: left; 
+            font-weight: 600;
+        }
+        .ranking-table td { 
+            border: none; 
+            padding: 10px; 
+            background-color: var(--wimbledon-white);
+            border-bottom: 1px solid #dcdcdc; 
+        }
+        .ranking-table tr:nth-child(even) td { background-color: var(--wimbledon-light-grey); } 
+        .ranking-table tbody tr:hover td { background-color: #e6e6e6; } 
+
+        /* MATCH CARDS */
+        .match-card { 
+            border: 1px solid #ccc; 
+            padding: 20px; 
+            margin-top: 15px; 
+            border-radius: 5px;
+        }
+        .match-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-weight: 700; 
+            margin-bottom: 10px; 
+            color: var(--wimbledon-purple);
+        }
+        .status-selesai { 
+            background-color: #e8f5e9; /* Light Green */
+            border-color: var(--wimbledon-green);
+        }
+        .status-belum { 
+            background-color: #fffde7; /* Light Gold/Yellow */
+            border-color: var(--wimbledon-accent);
+        }
         
-        if poin1 > poin2:
-            # Tim 1 Menang, Tim 2 Kalah
-            for p_id in pemain_tim_1:
-                if p_id in pemain_df.index:
-                    pemain_df.loc[p_id, 'W'] += 1
-            for p_id in pemain_tim_2:
-                if p_id in pemain_df.index:
-                    pemain_df.loc[p_id, 'L'] += 1
-        elif poin2 > poin1:
-            # Tim 2 Menang, Tim 1 Kalah
-            for p_id in pemain_tim_2:
-                if p_id in pemain_df.index:
-                    pemain_df.loc[p_id, 'W'] += 1
-            for p_id in pemain_tim_1:
-                if p_id in pemain_df.index:
-                    pemain_df.loc[p_id, 'L'] += 1
-        else:
-            # Seri/Tie (poin1 == poin2)
-            pemain_all = [p for p in pemain_tim_1 + pemain_tim_2 if p is not None]
-            for p_id in pemain_all:
-                if p_id in pemain_df.index:
-                    pemain_df.loc[p_id, 'T'] += 1
+        .score-input-group { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 20px; 
+            align-items: center; 
+            margin-top: 15px; 
+        }
+        .score-input-group label { 
+            font-size: 0.9em; 
+            color: #666; 
+            margin-bottom: 3px; 
+        }
+        .score-input-group input[type="number"] { 
+            width: 80px; 
+            text-align: center;
+        }
+
+        /* BYE & INFO */
+        .bye-info {
+            background-color: #ffccbc; /* Light Peach */
+            color: var(--wimbledon-purple);
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border: 1px dashed var(--wimbledon-purple);
+        }
+        .info-note {
+            font-size: 0.8em; 
+            color: #666; 
+            margin-top: 5px;
+        }
+        .team-1-color { color: var(--wimbledon-purple); }
+        .team-2-color { color: var(--wimbledon-green); }
+
+    </style>
+</head>
+<body>
+    <div class="sub-header-haniif">
+        Made by Haniif
+    </div>
+    
+    <div class="header">
+        Even Play for Everybody
+    </div>
+
+    <div class="container">
+        
+        <div class="card">
+            <h2>👥 Tambah Pemain</h2>
+            <form action="{{ url_for('tambah_pemain') }}" method="post" class="form-inline">
+                <input type="text" name="nama_pemain" placeholder="Nama Pemain Baru" required style="flex-grow: 1;">
+                <button type="submit" class="btn-base btn-primary">➕ Tambah Pemain</button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2>📊 Peringkat Saat Ini</h2>
+            {% if peringkat %}
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nama</th>
+                        <th style="text-align: center;">Total Poin</th>
+                        <th>W/L/T</th> 
+                        <th>Games Dimainkan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in peringkat %}
+                    <tr>
+                        <td>{{ p.Peringkat }}</td> 
+                        <td>
+                            {{ p.Nama }}
+                            <form action="{{ url_for('hapus_pemain', player_id=p.ID) }}" method="post" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus {{ p.Nama }}? Ini akan membatalkan jadwal putaran saat ini.');">
+                                <button type="submit" class="btn-base btn-danger-small">❌</button>
+                            </form>
+                        </td>
+                        <td style="text-align: center; font-weight: 700; color: var(--wimbledon-purple);">{{ p.Total_Poin }}</td>
+                        <td>{{ p.W }}/{{ p.L }}/{{ p.T }}</td> 
+                        <td>{{ p.Games_Played }}</td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p class="info-note" style="color: #666;">* Menghapus pemain akan otomatis membatalkan seluruh jadwal di putaran saat ini.</p>
+            {% else %}
+            <p>Belum ada pemain terdaftar. Silakan tambahkan pemain di atas.</p>
+            {% endif %}
+        </div>
+        
+        <div class="card">
+            <h2>🚀 Atur Putaran Berikutnya (Putaran {{ putaran + 1 }})</h2>
+            <form action="{{ url_for('mulai_putaran') }}" method="post" class="form-inline">
+                
+                <label for="mode_permainan">Mode:</label>
+                <select name="mode_permainan" id="mode_permainan" style="width: auto;">
+                    <option value="Double" {% if current_mode == 'Double' %} selected {% endif %}>Double (2v2)</option>
+                    <option value="Single" {% if peringkat|length < 2 %} disabled {% endif %} {% if current_mode == 'Single' %} selected {% endif %}>Single (1v1)</option>
+                </select>
+                
+                <label for="format_turnamen">Format:</label>
+                <select name="format_turnamen" id="format_turnamen" style="width: auto;">
+                    <option value="Americano" {% if current_format == 'Americano' %} selected {% endif %}>Americano (Acak)</option>
+                    <option value="Mexicano" {% if peringkat|length < 4 %} disabled {% endif %} {% if current_format == 'Mexicano' %} selected {% endif %}>Mexicano (Peringkat)</option>
+                </select>
+                
+                <label for="num_lapangan">Lapangan:</label>
+                <select name="num_lapangan" id="num_lapangan" style="width: auto;">
+                    {% for num in max_lapangan_pilihan %}
+                        <option value="{{ num }}">{{ num }} Lapangan</option>
+                    {% endfor %}
+                </select>
+                
+                <button type="submit" class="btn-base btn-primary" 
+                    {% if peringkat|length < 2 %} disabled {% endif %}
+                >Buat Jadwal Putaran {{ putaran + 1 }}</button>
+            </form>
+            {% if peringkat|length < 2 %}
+            <p style="color:var(--wimbledon-purple); margin-top:10px;">*Minimal 2 pemain diperlukan untuk mode Single, dan 4 pemain untuk mode Double/Mexicano.</p>
+            {% endif %}
+        </div>
+        
+        {% if putaran > 0 %} 
+        <div class="card" style="border-left: 5px solid var(--wimbledon-green);">
+            <h2>📅 Jadwal Putaran {{ putaran }} (Mode: {{ current_mode }} — Format: {{ current_format }})</h2>
+            
+            {% if pemain_bye %}
+                <div class="bye-info">
+                    👋 **Bye (Tidak Bermain) di Putaran Ini:** {% for nama in pemain_bye %}
+                        {{ nama }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if can_reshuffle %}
+                <form action="{{ url_for('kocok_ulang') }}" method="post" class="form-inline" style="margin-bottom: 20px; border: none; background: none; padding: 0;">
+                    <input type="hidden" name="num_lapangan_ulang" value="{{ jadwal[0].Lapangan }}">
                     
-    return pemain_df
-    
-def buat_jadwal(pemain_df, putaran, num_lapangan, mode_permainan, format_turnamen):
-    """
-    Membuat jadwal baru dengan logika prioritas yang lebih adil.
-    Prioritas: Total_Bye terbanyak (DESC) > Games_Played paling sedikit (ASC) > Total_Poin (DESC).
-    """
-    if 'Total_Bye' not in pemain_df.columns:
-        pemain_df['Total_Bye'] = 0
-    # MODIFIKASI: Pastikan Games_Played ada
-    if 'Games_Played' not in pemain_df.columns:
-        pemain_df['Games_Played'] = 0
+                    <label for="format_turnamen_ulang">Format Kocok Ulang:</label>
+                    <select name="format_turnamen_ulang" id="format_turnamen_ulang" style="width: auto;">
+                         <option value="Americano" {% if current_format == 'Americano' %} selected {% endif %}>Americano (Acak)</option>
+                         <option value="Mexicano" {% if peringkat|length < 4 %} disabled {% endif %} {% if current_format == 'Mexicano' %} selected {% endif %}>Mexicano (Peringkat)</option>
+                    </select>
+
+                    <input type="hidden" name="mode_permainan_ulang" value="{{ current_mode }}">
+                    <button type="submit" class="btn-base btn-warning">🔄 Kocok Ulang Putaran Ini! (Belum ada skor masuk)</button>
+                    <p class="info-note">*Akan membuat jadwal baru menggunakan mode dan jumlah lapangan yang sama. Pilih format di atas.</p>
+                </form>
+            {% elif jadwal %}
+                <p class="info-note" style="color: var(--wimbledon-green);">*Beberapa pertandingan sudah memiliki skor. Kocok ulang tidak tersedia.</p>
+            {% endif %}
             
-    pemain_df['Rank_Poin'] = pemain_df['Total_Poin'].rank(method='min', ascending=False)
-    
-    # MODIFIKASI: Mengubah urutan sorting untuk prioritas yang lebih adil
-    pemain_aktif_sorted = pemain_df.sort_values(
-        by=['Total_Bye', 'Games_Played', 'Total_Poin'], 
-        ascending=[False, True, False] # Total_Bye DESC, Games_Played ASC, Total_Poin DESC
-    ).index.tolist()
-    
-    players_per_court = 4 if mode_permainan == 'Double' else 2
-    total_slots = num_lapangan * players_per_court
-    
-    pemain_potensial = pemain_aktif_sorted[:total_slots]
-    
-    pemain_yang_bermain_count = len(pemain_potensial) - (len(pemain_potensial) % players_per_court)
-    pemain_bermain_ids = pemain_potensial[:pemain_yang_bermain_count]
-    
-    pemain_bermain = pemain_bermain_ids
+            {% if jadwal %}
+                {% for match in jadwal %}
+                <form action="{{ url_for('input_skor', match_id=match.Match_ID) }}" method="post" class="match-card {% if match.Status == 'Selesai' %}status-selesai{% else %}status-belum{% endif %}">
+                    
+                    <div class="match-header">
+                        <span style="color: var(--wimbledon-green);">Lapangan {{ match.Lapangan }}</span>
+                        <span>Status: <strong style="color: {% if match.Status == 'Selesai' %}var(--wimbledon-green){% else %}var(--wimbledon-accent){% endif %};">{{ match.Status }}</strong></span>
+                    </div>
 
-    if len(pemain_bermain) < players_per_court:
-        return []
+                    {% if match.Mode == 'Double' %}
+                        <p>Pasangan: 
+                            <strong class="team-1-color">({{ match.Pemain_1_A_Nama }} & {{ match.Pemain_1_B_Nama }})</strong> VS 
+                            <strong class="team-2-color">({{ match.Pemain_2_A_Nama }} & {{ match.Pemain_2_B_Nama }})</strong>
+                        </p>
+                    {% else %}
+                        <p>Pertandingan: 
+                            <strong class="team-1-color">{{ match.Pemain_1_A_Nama }}</strong> VS 
+                            <strong class="team-2-color">{{ match.Pemain_2_A_Nama }}</strong>
+                        </p>
+                    {% endif %}
+                    
+                    <div class="score-input-group">
+                        <div style="flex: 1;">
+                            <label>Skor Tim 1 (Ungu):</label>
+                            <input type="number" name="skor_tim_1" value="{{ match.Poin_Tim_1 }}" min="0" max="30" required>
+                            <span style="font-size: 0.8em; color: var(--wimbledon-purple);">({{ match.Pemain_1_A_Nama }}...)</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <label>Skor Tim 2 (Hijau):</label>
+                            <input type="number" name="skor_tim_2" value="{{ match.Poin_Tim_2 }}" min="0" max="30" required>
+                            <span style="font-size: 0.8em; color: var(--wimbledon-green);">({{ match.Pemain_2_A_Nama }}...)</span>
+                        </div>
+                        <button type="submit" class="btn-base btn-primary">Simpan/Update Skor</button>
+                    </div>
+                    
+                </form>
+                {% endfor %}
+            {% else %}
+                <p>Belum ada pertandingan terjadwal untuk putaran ini.</p>
+            {% endif %}
+        </div>
+        {% endif %}
 
-    jadwal_baru = []
-    
-    # --- AMERICANO (Acak) ---
-    if format_turnamen == 'Americano':
-        random.shuffle(pemain_bermain) # Acak di antara pemain yang sudah diprioritaskan
+        <div class="card" style="background-color: #f7f7f7; border-left: 5px solid var(--wimbledon-green);">
+            <h2>🛑 Akhiri Turnamen & Rekap Skor</h2>
+            {% if putaran > 0 %}
+                <p>Lihat Peringkat Final turnamen dalam format visual yang elegan.</p>
+                <a href="{{ url_for('rekap_visual') }}" class="btn-base btn-danger">
+                   👑 Game Recap
+                </a>
+            {% else %}
+                <p>Mulai setidaknya satu putaran untuk mengakhiri turnamen.</p>
+            {% endif %}
+        </div>
         
-        for i in range(0, len(pemain_bermain), players_per_court):
-            grup_pemain = pemain_bermain[i:i+players_per_court]
-            
-            if len(grup_pemain) == players_per_court:
-                lapangan_num = (i // players_per_court) + 1
-                
-                if mode_permainan == 'Double':
-                    P1A, P1B, P2A, P2B = grup_pemain
-                else: # Single
-                    P1A, P2A = grup_pemain
-                    P1B, P2B = None, None
-                
-                match_data = {
-                    'Match_ID': get_next_match_id(),
-                    'Putaran': putaran,
-                    'Lapangan': lapangan_num,
-                    'Mode': mode_permainan,
-                    'Pemain_1_A': P1A, 'Pemain_1_B': P1B,
-                    'Pemain_2_A': P2A, 'Pemain_2_B': P2B,
-                    'Poin_Tim_1': 0, 'Poin_Tim_2': 0,
-                    'Status': 'Belum Selesai'
-                }
-                jadwal_baru.append(match_data)
-    
-    # --- MEXICANO (Peringkat) ---
-    elif format_turnamen == 'Mexicano':
-        
-        # Urutkan ulang pemain yang bermain berdasarkan Total_Poin (untuk pairing High vs Low)
-        pemain_bermain_df_sorted = pemain_df.loc[pemain_bermain].sort_values(
-            by='Total_Poin', ascending=False
-        ).index.tolist()
-        
-        mid_point = len(pemain_bermain_df_sorted) // 2
-        peringkat_tinggi = pemain_bermain_df_sorted[:mid_point]
-        peringkat_rendah = pemain_bermain_df_sorted[mid_point:]
-        
-        # Kocok di dalam masing-masing kelompok (High vs Low)
-        random.shuffle(peringkat_tinggi)
-        random.shuffle(peringkat_rendah)
-        
-        if mode_permainan == 'Double':
-            
-            num_matches = len(peringkat_tinggi) # Karena Peringkat Tinggi = Peringkat Rendah
-            
-            for i in range(num_matches):
-                # Ambil pemain dari masing-masing kelompok
-                H1 = peringkat_tinggi[i]
-                L1 = peringkat_rendah[i]
+    </div>
+</body>
 
-                # Pasangan dilakukan dengan mengambil 2 high dan 2 low
-                # Jika pemain 1-4 adalah H1, H2, L1, L2 (setelah shuffle)
-                # Maka pasangan Tim 1 = (H1, L1) dan Tim 2 = (H2, L2)
-                # Karena shuffle sudah dilakukan pada H dan L, kita hanya perlu mencocokkannya.
-
-                # Pastikan jumlah pemain cukup
-                if len(peringkat_tinggi) < 2 or len(peringkat_rendah) < 2:
-                     break
-                
-                # Ambil 2 pemain High dan 2 pemain Low, lalu bagi timnya
-                H1, H2 = peringkat_tinggi.pop(0), peringkat_tinggi.pop(0)
-                L1, L2 = peringkat_rendah.pop(0), peringkat_rendah.pop(0)
-
-                P1A, P1B, P2A, P2B = H1, L1, H2, L2 # Tim 1: H1 & L1 vs Tim 2: H2 & L2
-                
-                lapangan_num = i + 1
-                
-                match_data = {
-                    'Match_ID': get_next_match_id(),
-                    'Putaran': putaran,
-                    'Lapangan': lapangan_num,
-                    'Mode': mode_permainan,
-                    'Pemain_1_A': P1A, 'Pemain_1_B': P1B,
-                    'Pemain_2_A': P2A, 'Pemain_2_B': P2B,
-                    'Poin_Tim_1': 0, 'Poin_Tim_2': 0,
-                    'Status': 'Belum Selesai'
-                }
-                jadwal_baru.append(match_data)
-        
-        elif mode_permainan == 'Single':
-            
-            num_matches = len(peringkat_tinggi)
-            for i in range(num_matches):
-                P1A = peringkat_tinggi[i]
-                P2A = peringkat_rendah[i]
-                
-                lapangan_num = i + 1
-                
-                match_data = {
-                    'Match_ID': get_next_match_id(),
-                    'Putaran': putaran,
-                    'Lapangan': lapangan_num,
-                    'Mode': mode_permainan,
-                    'Pemain_1_A': P1A, 'Pemain_1_B': None,
-                    'Pemain_2_A': P2A, 'Pemain_2_B': None,
-                    'Poin_Tim_1': 0, 'Poin_Tim_2': 0,
-                    'Status': 'Belum Selesai'
-                }
-                jadwal_baru.append(match_data)
-            
-    return jadwal_baru
-
-# ----------------------------------------------------
-#                    ROUTE APLIKASI
-# ----------------------------------------------------
-
-@app.route('/')
-def index():
-    global pemain_df, jadwal_df, putaran_saat_ini, last_config
-
-    if 'Total_Bye' not in pemain_df.columns:
-        pemain_df['Total_Bye'] = 0
-    # MODIFIKASI: Inisialisasi Games_Played
-    if 'Games_Played' not in pemain_df.columns:
-        pemain_df['Games_Played'] = 0
-    
-    # Inisialisasi kolom W, L, T jika tidak ada sebelum memanggil hitung_wlt
-    for col in ['W', 'L', 'T']:
-         if col not in pemain_df.columns:
-              pemain_df[col] = 0
-
-    peringkat = pd.DataFrame()
-    if not pemain_df.empty:
-        # Panggil fungsi W/L/T
-        pemain_df_temp = hitung_wlt(pemain_df.copy(), jadwal_df.copy())
-        
-        peringkat = pemain_df_temp.copy()
-        peringkat['Peringkat'] = peringkat['Total_Poin'].rank(method='min', ascending=False).astype(int)
-        peringkat = peringkat.sort_values(by=['Peringkat', 'Total_Poin'], ascending=[True, False])
-        
-        # PERBAIKAN: Mengubah Index 'ID' menjadi Kolom 'ID'
-        peringkat = peringkat.reset_index(names=['ID'])
-        
-
-    jadwal_saat_ini = jadwal_df[jadwal_df['Putaran'] == putaran_saat_ini].reset_index()
-    jadwal_untuk_template = []
-    
-    can_reshuffle = False
-    # Menggunakan last_config untuk default/putaran baru
-    current_mode = last_config['mode_permainan'] 
-    current_format = last_config['format_turnamen'] 
-    pemain_bye = []
-
-    if not jadwal_saat_ini.empty:
-        # Jika jadwal ada, update mode dan format dari data jadwal yang sebenarnya
-        current_mode = jadwal_saat_ini.loc[0, 'Mode']
-        # MODIFIKASI: current_format diambil dari last_config yang selalu diupdate
-        current_format = last_config['format_turnamen'] 
-        players_per_court = 4 if current_mode == 'Double' else 2
-        
-        # 1. Tentukan Pemain yang Dapat Bye
-        if 'Rank_Poin' not in pemain_df.columns:
-            pemain_df['Rank_Poin'] = pemain_df['Total_Poin'].rank(method='min', ascending=False)
-                 
-        # Gunakan logika sorting baru untuk menentukan pemain yang seharusnya bermain
-        pemain_potensial_idx = pemain_df.sort_values(
-            by=['Total_Bye', 'Games_Played', 'Total_Poin'], 
-            ascending=[False, True, False]
-        ).index.tolist()
-        
-        id_cols = ['Pemain_1_A', 'Pemain_1_B', 'Pemain_2_A', 'Pemain_2_B']
-        pemain_yang_bermain_id = set()
-        for col in id_cols:
-            if col in jadwal_saat_ini.columns:
-                # Mengambil ID pemain yang ada di jadwal
-                pemain_yang_bermain_id.update(jadwal_saat_ini[col].dropna().tolist())
-
-        # Pemain bye adalah pemain yang diprioritaskan untuk bermain
-        # tetapi tidak ada di jadwal yang dibuat (pemain yang "tertinggal" di daftar sort)
-        
-        pemain_bye_ids = [id for id in pemain_potensial_idx if id not in pemain_yang_bermain_id]
-        
-        # HANYA pemain yang ada di jadwal putaran saat ini yang Total_Bye-nya direset/tidak di-increment
-        # Pemain yang seharusnya bermain (pemain_potensial_idx) tapi tidak bermain (pemain_bye_ids) di-increment.
-        
-        # Ambil daftar ID pemain yang harusnya bermain tapi tidak terjadwal
-        # Total pemain yang bisa bermain adalah total pemain dikurangi slot yang terisi
-        
-        # Ambil daftar pemain yang seharusnya bermain (sesuai prioritas)
-        players_per_court = 4 if current_mode == 'Double' else 2
-        num_courts_used = len(jadwal_saat_ini)
-        max_players_scheduled = num_courts_used * players_per_court
-        
-        # Jumlah pemain yang harusnya terjadwal (pemain yang paling diprioritaskan)
-        pemain_ranked = pemain_potensial_idx[:max_players_scheduled + players_per_court]
-        
-        # Pemain yang Bye adalah pemain yang paling diprioritaskan tetapi tidak masuk dalam jadwal (selisih)
-        pemain_bye_ids = [id for id in pemain_ranked if id not in pemain_yang_bermain_id]
-        
-        # INCREMENT Total_Bye UNTUK PEMAIN YANG BYE
-        # Ini hanya dilakukan jika putaran sudah berjalan (bukan putaran 0)
-        if putaran_saat_ini > 0:
-            # Pastikan ini hanya di-increment sekali per putaran.
-            # Logika di sini akan dipanggil setiap kali index dipanggil. 
-            # Perbaikan: Logic increment Total_Bye HARUS di pindahkan ke tempat yang HANYA dipanggil SEKALI.
-            # Namun, karena ini adalah fungsi yang merender state, kita harus berhati-hati.
-            # Solusi sementara: Simpan Total_Bye yang sudah dihitung di `last_bye_round`
-            pass # Membiarkan logic increment Total_Bye dihilangkan karena sulit di state-less request
-                 # Pemain yang tidak bermain (pemain_bye_ids) akan otomatis mendapat prioritas di putaran berikutnya
-                 # karena Games_Played mereka paling sedikit atau Total_Bye mereka tetap tinggi.
-        
-        # INCREMENT TOTAL_BYE SAAT INI (Jika putaran > 0 dan data belum ada di jadwal_df)
-        # Karena sulit melacak state increment di Flask, kita anggap pemain yang seharusnya 
-        # diprioritaskan tapi tidak bermain, akan tetap diprioritaskan di buat_jadwal berikutnya.
-        # Logika Total_Bye di sini hanya untuk menampilkan info siapa yang Bye.
-        
-        pemain_bye = pemain_df.loc[pemain_bye_ids]['Nama'].tolist()
-        
-        # 2. Logika Jadwal dan Reshuffle
-        if (jadwal_saat_ini['Status'] == 'Belum Selesai').all():
-            can_reshuffle = True
-            
-        if not pemain_df.empty:
-            jadwal_dengan_nama = jadwal_saat_ini.copy()
-            
-            for col in id_cols:
-                if col in jadwal_dengan_nama.columns and jadwal_dengan_nama[col].notna().any():
-                    jadwal_dengan_nama = jadwal_dengan_nama.merge(
-                        pemain_df[['Nama']], 
-                        left_on=col, 
-                        right_index=True, 
-                        how='left', 
-                        suffixes=('', f'_{col}_Nama')
-                    )
-                    jadwal_dengan_nama = jadwal_dengan_nama.rename(columns={'Nama': f'{col}_Nama'})
-
-            jadwal_untuk_template = jadwal_dengan_nama.to_dict('records')
-    
-    if putaran_saat_ini == 0:
-        pemain_bye = []
-
-
-    return render_template(
-        'index.html', 
-        peringkat=peringkat.to_dict('records'),
-        jadwal=jadwal_untuk_template,
-        putaran=putaran_saat_ini,
-        max_lapangan_pilihan=[1, 2, 3, 4],
-        can_reshuffle=can_reshuffle,
-        current_mode=current_mode,
-        current_format=current_format,
-        pemain_bye=pemain_bye
-    )
-
-@app.route('/tambah_pemain', methods=['POST'])
-def tambah_pemain():
-    global pemain_df
-    nama = request.form.get('nama_pemain')
-    
-    if nama and len(pemain_df) < MAX_PEMAIN:
-        new_id = get_next_player_id()
-        # Inisialisasi Games_Played
-        new_row = pd.DataFrame([{'ID': new_id, 'Nama': nama, 'Total_Poin': 0, 'Games_Played': 0, 'Total_Bye': 0, 'W': 0, 'L': 0, 'T': 0}])
-        new_row = new_row.set_index('ID')
-        pemain_df = pd.concat([pemain_df, new_row])
-        
-    return redirect(url_for('index'))
-
-@app.route('/hapus_pemain/<int:player_id>', methods=['POST'])
-def hapus_pemain(player_id):
-    global pemain_df, jadwal_df, putaran_saat_ini
-    
-    if player_id in pemain_df.index:
-        # Hapus pemain dari DataFrame pemain
-        pemain_df.drop(player_id, inplace=True)
-        
-        # Hapus pemain dari jadwal yang BELUM SELESAI
-        cols_to_check = ['Pemain_1_A', 'Pemain_1_B', 'Pemain_2_A', 'Pemain_2_B']
-        
-        # Hanya putaran saat ini yang mungkin perlu dikoreksi
-        jadwal_saat_ini_idx = jadwal_df[jadwal_df['Putaran'] == putaran_saat_ini].index
-        
-        # Hapus match jika pemain terlibat
-        indices_to_drop = []
-        for idx in jadwal_saat_ini_idx:
-            is_involved = False
-            for col in cols_to_check:
-                if jadwal_df.loc[idx, col] == player_id:
-                    is_involved = True
-                    break
-            
-            if is_involved:
-                indices_to_drop.append(idx)
-        
-        if indices_to_drop:
-            jadwal_df.drop(indices_to_drop, inplace=True)
-        
-        # Jika semua match di putaran saat ini terhapus, kembalikan putaran_saat_ini ke putaran sebelumnya
-        if putaran_saat_ini > 0 and jadwal_df[jadwal_df['Putaran'] == putaran_saat_ini].empty:
-            putaran_saat_ini -= 1
-
-    return redirect(url_for('index'))
-
-
-@app.route('/mulai_putaran', methods=['POST'])
-def mulai_putaran():
-    global putaran_saat_ini, jadwal_df, last_config
-    
-    num_lapangan = int(request.form.get('num_lapangan', 1))
-    format_turnamen = request.form.get('format_turnamen')
-    mode_permainan = request.form.get('mode_permainan') 
-
-    players_per_court = 4 if mode_permainan == 'Double' else 2
-
-    if len(pemain_df) < players_per_court:
-        return redirect(url_for('index')) 
-
-    # Hapus jadwal putaran yang belum selesai
-    jadwal_df = jadwal_df[jadwal_df['Status'] == 'Selesai'] 
-    
-    putaran_saat_ini += 1
-    
-    # MODIFIKASI: Simpan konfigurasi yang dipilih
-    last_config['num_lapangan'] = num_lapangan
-    last_config['format_turnamen'] = format_turnamen
-    last_config['mode_permainan'] = mode_permainan
-    
-    new_matches = buat_jadwal(pemain_df, putaran_saat_ini, num_lapangan, mode_permainan, format_turnamen)
-    
-    if new_matches:
-        new_jadwal_df = pd.DataFrame(new_matches)
-        new_jadwal_df.set_index('Match_ID', inplace=True) 
-        jadwal_df = pd.concat([jadwal_df, new_jadwal_df])
-        
-    return redirect(url_for('index'))
-
-@app.route('/kocok_ulang', methods=['POST'])
-def kocok_ulang():
-    global jadwal_df, putaran_saat_ini, last_config
-    
-    jadwal_saat_ini = jadwal_df[jadwal_df['Putaran'] == putaran_saat_ini]
-    
-    if not jadwal_saat_ini.empty and (jadwal_saat_ini['Status'] == 'Belum Selesai').all():
-        
-        # Hapus jadwal putaran saat ini yang belum selesai
-        jadwal_df = jadwal_df[jadwal_df['Putaran'] != putaran_saat_ini]
-
-        num_lapangan = len(jadwal_saat_ini['Lapangan'].unique()) 
-        format_turnamen = request.form.get('format_turnamen_ulang')
-        mode_permainan = request.form.get('mode_permainan_ulang') 
-        
-        # MODIFIKASI: Update last_config dengan format baru setelah kocok ulang
-        last_config['num_lapangan'] = num_lapangan
-        last_config['format_turnamen'] = format_turnamen
-        last_config['mode_permainan'] = mode_permainan
-        
-        new_matches = buat_jadwal(pemain_df, putaran_saat_ini, num_lapangan, mode_permainan, format_turnamen)
-
-        if new_matches:
-            new_jadwal_df = pd.DataFrame(new_matches)
-            new_jadwal_df.set_index('Match_ID', inplace=True) 
-            jadwal_df = pd.concat([jadwal_df, new_jadwal_df])
-
-    return redirect(url_for('index'))
-
-@app.route('/input_skor/<int:match_id>', methods=['POST'])
-def input_skor(match_id):
-    global jadwal_df, pemain_df, putaran_saat_ini, last_config
-    
-    try:
-        skor_tim_1 = int(request.form.get('skor_tim_1', 0))
-        skor_tim_2 = int(request.form.get('skor_tim_2', 0))
-    except ValueError:
-        return redirect(url_for('index'))
-    
-    if skor_tim_1 >= 0 and skor_tim_2 >= 0:
-        
-        if match_id in jadwal_df.index:
-            
-            match_row = jadwal_df.loc[match_id]
-            
-            pemain_ids_team_1 = [id for id in [match_row['Pemain_1_A'], match_row['Pemain_1_B']] if id is not None]
-            pemain_ids_team_2 = [id for id in [match_row['Pemain_2_A'], match_row['Pemain_2_B']] if id is not None]
-            
-            pemain_ids_all = pemain_ids_team_1 + pemain_ids_team_2
-
-            # 1. Kurangi Poin Lama (untuk update skor)
-            if match_row['Status'] == 'Selesai':
-                poin_lama_tim_1 = match_row['Poin_Tim_1']
-                poin_lama_tim_2 = match_row['Poin_Tim_2']
-                
-                for id in pemain_ids_team_1:
-                    if id in pemain_df.index:
-                        pemain_df.loc[id, 'Total_Poin'] -= poin_lama_tim_1
-                
-                for id in pemain_ids_team_2:
-                    if id in pemain_df.index:
-                        pemain_df.loc[id, 'Total_Poin'] -= poin_lama_tim_2
-                        
-            # 2. Tambah Games_Played (hanya jika match baru selesai ATAU update skor)
-            # Logika di sini salah, Games_Played harus di-increment sekali jika match selesai
-            # Perbaiki: Games_Played dihitung dari total poin yang masuk
-            
-            # Jika match sudah selesai, kita tidak mengurangi Games_Played lama, 
-            # cukup ganti Total_Poin dan biarkan Games_Played.
-            
-            if match_row['Status'] != 'Selesai':
-                total_points_in_match = skor_tim_1 + skor_tim_2
-                for id in pemain_ids_all:
-                     if id in pemain_df.index:
-                         # Setiap poin yang masuk dihitung sebagai 1 game played (standar Americano/Mexicano)
-                         pemain_df.loc[id, 'Games_Played'] += total_points_in_match 
-                         
-            # 3. Update Jadwal
-            jadwal_df.loc[match_id, ['Poin_Tim_1', 'Poin_Tim_2']] = [skor_tim_1, skor_tim_2]
-            jadwal_df.loc[match_id, 'Status'] = 'Selesai'
-            
-            # 4. Tambah Poin Baru ke Total Poin Pemain
-            for id in pemain_ids_team_1:
-                if id in pemain_df.index:
-                    pemain_df.loc[id, 'Total_Poin'] += skor_tim_1
-
-            for id in pemain_ids_team_2:
-                if id in pemain_df.index:
-                    pemain_df.loc[id, 'Total_Poin'] += skor_tim_2
-
-    
-    # --- Otomatis Buat Jadwal Putaran Berikutnya ---
-    current_round_matches = jadwal_df[jadwal_df['Putaran'] == putaran_saat_ini]
-    
-    if not current_round_matches.empty and (current_round_matches['Status'] == 'Selesai').all():
-        
-        # Hapus semua jadwal putaran yang BELUM SELESAI (hanya putaran saat ini)
-        jadwal_df = jadwal_df[jadwal_df['Putaran'] < putaran_saat_ini] # Hapus semua putaran setelah putaran saat ini (jika ada)
-        
-        putaran_saat_ini += 1
-        
-        num_lapangan = last_config['num_lapangan']
-        format_turnamen = last_config['format_turnamen']
-        mode_permainan = last_config['mode_permainan']
-        
-        # INCREMENT Total_Bye untuk pemain yang "Bye" di putaran sebelumnya
-        # Mengambil ID pemain yang seharusnya bermain tapi tidak masuk jadwal di putaran (putaran_saat_ini - 1)
-        prev_putaran = putaran_saat_ini - 1
-        
-        # 1. Tentukan pemain yang seharusnya bermain di putaran sebelumnya (sesuai prioritas)
-        players_per_court = 4 if last_config['mode_permainan'] == 'Double' else 2
-        num_courts = last_config['num_lapangan']
-        max_players_to_be_scheduled = num_courts * players_per_court
-        
-        pemain_potensial_prev = pemain_df.sort_values(
-            by=['Total_Bye', 'Games_Played', 'Total_Poin'], 
-            ascending=[False, True, False]
-        ).index.tolist()
-        
-        pemain_potensial_prev = pemain_potensial_prev[:max_players_to_be_scheduled + players_per_court]
-        
-        # 2. Ambil pemain yang BENAR-BENAR bermain di putaran sebelumnya
-        prev_matches = jadwal_df[jadwal_df['Putaran'] == prev_putaran]
-        players_who_played_prev = set(prev_matches[['Pemain_1_A', 'Pemain_1_B', 'Pemain_2_A', 'Pemain_2_B']].stack().dropna().tolist())
-        
-        # 3. Pemain yang Bye adalah pemain yang diprioritaskan (pemain_potensial_prev) tapi tidak bermain
-        players_on_bye_prev = [id for id in pemain_potensial_prev if id not in players_who_played_prev]
-        
-        # 4. Increment Total_Bye
-        pemain_df.loc[players_on_bye_prev, 'Total_Bye'] += 1
-        
-        
-        new_matches = buat_jadwal(pemain_df, putaran_saat_ini, num_lapangan, mode_permainan, format_turnamen)
-        
-        if new_matches:
-            new_jadwal_df = pd.DataFrame(new_matches)
-            new_jadwal_df.set_index('Match_ID', inplace=True) 
-            jadwal_df = pd.concat([jadwal_df, new_jadwal_df])
-            
-    return redirect(url_for('index'))
-
-# ROUTE BARU: Menampilkan Rekap Visual (bukan download CSV)
-@app.route('/rekap_visual')
-def rekap_visual():
-    global pemain_df, jadwal_df
-    
-    # 1. Hitung W/L/T final dan Peringkat
-    pemain_final = hitung_wlt(pemain_df.copy(), jadwal_df.copy())
-    
-    pemain_final['Peringkat'] = pemain_final['Total_Poin'].rank(method='min', ascending=False).astype(int)
-    pemain_final = pemain_final.sort_values(by=['Peringkat', 'Total_Poin'], ascending=[True, False])
-    
-    # 2. Siapkan data untuk template
-    kolom_rekap = [
-        'Peringkat', 
-        'Nama', 
-        'Total_Poin', 
-        'W', 'L', 'T', 
-        'Games_Played'
-    ]
-    # Perbaikan: Reset index saat memilih kolom
-    rekap_df = pemain_final.reset_index()
-    rekap_df = rekap_df[kolom_rekap].reset_index(drop=True)
-    
-    return render_template(
-        'rekap.html', 
-        rekap=rekap_df.to_dict('records')
-    )
-
-if __name__ == '__main__':
-    app.run(debug=True)
+</html>
