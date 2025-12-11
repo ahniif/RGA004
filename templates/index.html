@@ -204,8 +204,10 @@
             border-top: 1px solid var(--border-light);
             padding-top: 15px;
         }
-        .team-1-color { color: var(--black-text); font-weight: 700; }
-        .team-2-color { color: var(--grey-text); font-weight: 700; }
+        /* Penyesuaian Warna Status W/L/T */
+        .wlt-match-win { color: var(--success-green); font-weight: 500; }
+        .wlt-match-lose { color: var(--danger-red); font-weight: 500; }
+        .wlt-match-tie { color: var(--grey-text); font-weight: 500; }
 
         /* INFO & RECAP */
         .bye-info {
@@ -249,6 +251,19 @@
         }
 
     </style>
+    <script>
+        function getWltClass(wltString) {
+            // W/L/T format: 1/0/0 (Win), 0/1/0 (Lose), 0/0/1 (Tie)
+            if (wltString.startsWith('1')) {
+                return 'wlt-match-win';
+            } else if (wltString.startsWith('0/1')) {
+                return 'wlt-match-lose';
+            } else if (wltString.startsWith('0/0/1')) {
+                return 'wlt-match-tie';
+            }
+            return '';
+        }
+    </script>
 </head>
 <body>
     
@@ -276,7 +291,7 @@
                         <tr>
                             <th style="width: 30px; text-align: center;">#</th>
                             <th>Player Name</th>
-                            <th style="text-align: center;">Total Points (W-L)</th>
+                            <th style="text-align: center;">Total Points</th>
                             <th>W/L/T</th> 
                             <th>Games Played</th>
                         </tr>
@@ -293,7 +308,7 @@
                                     <button type="submit" class="btn-base btn-danger-small" title="Delete Player">✕</button>
                                 </form>
                             </td>
-                            <td style="text-align: center; font-weight: 700; color: var(--accent-blue);">{{ p.Ranking_W_L }}</td>
+                            <td style="text-align: center; font-weight: 700; color: var(--accent-blue);">{{ p.Total_Poin }}</td> 
                             <td>{{ p.W }}/{{ p.L }}/{{ p.T }}</td> 
                             <td>{{ p.Games_Played }}</td>
                         </tr>
@@ -301,7 +316,7 @@
                     </tbody>
                 </table>
             </div>
-            <p class="info-note">* Total Points are calculated as Wins - Losses (W-L), with Ties (T) as the tie-breaker.</p>
+            <p class="info-note">* Players ranked by **Total Points**, with Wins (W) as the tie-breaker.</p>
             {% else %}
             <p style="color: var(--grey-text);">No players registered.</p>
             {% endif %}
@@ -382,15 +397,19 @@
                     <div class="match-info">
                         {% if match.Mode == 'Double' %}
                             <p>
-                                <strong class="team-1-color">Team 1: ({{ match.Pemain_1_A_Nama }} & {{ match.Pemain_1_B_Nama }})</strong> 
+                                <strong class="team-1-color">Team 1:</strong> ({{ match.Pemain_1_A_Nama }} & {{ match.Pemain_1_B_Nama }}) 
+                                {% if match.Status == 'Selesai' %}<span class="{{ getWltClass(match.Status_Tim_1) }}">({{ match.Status_Tim_1 }})</span>{% endif %}
                                 <span style="color: var(--grey-text);">vs</span>
-                                <strong class="team-2-color">Team 2: ({{ match.Pemain_2_A_Nama }} & {{ match.Pemain_2_B_Nama }})</strong>
+                                <strong class="team-2-color">Team 2:</strong> ({{ match.Pemain_2_A_Nama }} & {{ match.Pemain_2_B_Nama }})
+                                {% if match.Status == 'Selesai' %}<span class="{{ getWltClass(match.Status_Tim_2) }}">({{ match.Status_Tim_2 }})</span>{% endif %}
                             </p>
                         {% else %}
                             <p>
                                 <strong class="team-1-color">{{ match.Pemain_1_A_Nama }}</strong> 
+                                {% if match.Status == 'Selesai' %}<span class="{{ getWltClass(match.Status_Tim_1) }}">({{ match.Status_Tim_1 }})</span>{% endif %}
                                 <span style="color: var(--grey-text);">vs</span>
                                 <strong class="team-2-color">{{ match.Pemain_2_A_Nama }}</strong>
+                                {% if match.Status == 'Selesai' %}<span class="{{ getWltClass(match.Status_Tim_2) }}">({{ match.Status_Tim_2 }})</span>{% endif %}
                             </p>
                         {% endif %}
                     </div>
