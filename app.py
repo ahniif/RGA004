@@ -46,36 +46,40 @@ def get_next_match_id():
     current_id = next_match_id
     next_match_id += 1
     return current_id
+
+def get_player_id(id_value):
+    """Fungsi bantuan untuk mengonversi ID pemain menjadi integer yang aman."""
+    if pd.notna(id_value):
+        try:
+            # Konversi eksplisit ke integer
+            return int(id_value) 
+        except (ValueError, TypeError):
+            return None
+    return None
+
+def safe_get_player_id_list(id_list):
+    """Fungsi bantuan untuk mengonversi list ID pemain menjadi integer yang aman."""
+    cleaned_ids = []
+    for id_value in id_list:
+        p_id = get_player_id(id_value)
+        if p_id is not None:
+            cleaned_ids.append(p_id)
+    return cleaned_ids
     
 def hitung_wlt(pemain_df_input, jadwal_df_input):
     """Menghitung Win/Lose/Tie berdasarkan semua pertandingan Selesai pada input DataFrame."""
     
-    # Bekerja pada salinan data frame input
     pemain_df = pemain_df_input.copy()
     jadwal_df = jadwal_df_input.copy()
     
-    # Inisialisasi kolom W/L/T
+    # Inisialisasi kolom W/L/T dan Reset nilai untuk perhitungan baru
     for col in ['W', 'L', 'T']:
         if col not in pemain_df.columns:
             pemain_df[col] = 0
-
-    # Reset nilai W/L/T untuk perhitungan baru
-    pemain_df['W'] = 0
-    pemain_df['L'] = 0
-    pemain_df['T'] = 0
+        pemain_df[col] = 0
     
     jadwal_selesai = jadwal_df[jadwal_df['Status'] == 'Selesai']
     
-    # FUNGSI BANTUAN UNTUK MENGAMBIL ID PEMAIN DENGAN TIPE INTEGER
-    def get_player_id(id_value):
-        if pd.notna(id_value):
-            try:
-                # Konversi eksplisit ke integer
-                return int(id_value) 
-            except ValueError:
-                return None
-        return None
-        
     for _, match in jadwal_selesai.iterrows():
         # Dapatkan ID pemain, pastikan bertipe integer jika valid
         p1a = get_player_id(match['Pemain_1_A'])
@@ -85,11 +89,11 @@ def hitung_wlt(pemain_df_input, jadwal_df_input):
         
         poin1, poin2 = match['Poin_Tim_1'], match['Poin_Tim_2']
         
+        # Pisahkan pemain tim 1 dan tim 2
         pemain_tim_1 = [p for p in [p1a, p1b] if p is not None]
         pemain_tim_2 = [p for p in [p2a, p2b] if p is not None]
         
         # Filtering agar hanya ID yang ada di index pemain_df yang dihitung
-        # Perbandingan ini sekarang aman karena p sudah integer
         pemain_tim_1 = [p for p in pemain_tim_1 if p in pemain_df.index]
         pemain_tim_2 = [p for p in pemain_tim_2 if p in pemain_df.index]
         
@@ -120,7 +124,9 @@ def buat_jadwal(pemain_df, putaran, num_lapangan, mode_permainan, format_turname
     # Pastikan kolom-kolom untuk sorting ada
     if 'Total_Bye' not in pemain_df.columns: pemain_df['Total_Bye'] = 0
     if 'Games_Played' not in pemain_df.columns: pemain_df['Games_Played'] = 0
-    if 'Random_Tie_Breaker' not in pemain_df.columns:
+    
+    # Tambahkan atau perbarui Random_Tie_Breaker
+    if 'Random_Tie_Breaker' not in pemain_df.columns or putaran % 5 == 1: # Regenerasi setiap 5 putaran
         pemain_df['Random_Tie_Breaker'] = [random.random() for _ in range(len(pemain_df))]
             
     pemain_df['Rank_Poin'] = pemain_df['Total_Poin'].rank(method='min', ascending=False)
@@ -291,19 +297,10 @@ def index():
         id_cols = ['Pemain_1_A', 'Pemain_1_B', 'Pemain_2_A', 'Pemain_2_B']
         pemain_yang_bermain_id = set()
         
-        # Fungsi bantuan untuk ID integer
-        def get_safe_int_id(id_value):
-            if pd.notna(id_value):
-                try:
-                    return int(id_value)
-                except ValueError:
-                    return None
-            return None
-
         for col in id_cols:
             if col in jadwal_saat_ini.columns:
                 # Ambil ID dan konversi ke integer yang aman
-                safe_ids = [get_safe_int_id(id_val) for id_val in jadwal_saat_ini[col].tolist()]
+                safe_ids = [get_player_id(id_val) for id_val in jadwal_saat_ini[col].tolist()]
                 pemain_yang_bermain_id.update([id for id in safe_ids if id is not None])
 
         players_per_court = 4 if current_mode == 'Double' else 2
@@ -387,13 +384,7 @@ def hapus_pemain(player_id):
             is_involved = False
             # Menggunakan .loc untuk akses yang lebih aman dan eksplisit
             for col in cols_to_check:
-                # Perlu konversi ID ke integer yang aman sebelum perbandingan
-                match_id_value = jadwal_df.loc[idx, col]
-                if pd.notna(match_id_value):
-                    try:
-                        match_id_value = int(match_id_value)
-                    except (ValueError, TypeError):
-                        match_id_value = None
+                match_id_value = get_player_id(jadwal_df.loc[idx, col])
 
                 if match_id_value == player_id:
                     is_involved = True
@@ -405,7 +396,7 @@ def hapus_pemain(player_id):
         if indices_to_drop:
             jadwal_df.drop(indices_to_drop, inplace=True)
             
-        # Perbarui W/L/T setelah menghapus pemain (yang mungkin terlibat di match selesai)
+        # Perbarui W/L/T setelah menghapus pemain
         pemain_df = hitung_wlt(pemain_df, jadwal_df)
 
         # Jika semua match di putaran saat ini terhapus, kembalikan putaran_saat_ini ke putaran sebelumnya
@@ -499,18 +490,6 @@ def input_skor(match_id):
         if match_id in jadwal_df.index:
             
             match_row = jadwal_df.loc[match_id]
-
-            # FUNGSI BANTUAN UNTUK MENGAMBIL ID PEMAIN DENGAN TIPE INTEGER
-            def safe_get_player_id_list(id_list):
-                cleaned_ids = []
-                for id_value in id_list:
-                    if pd.notna(id_value):
-                        try:
-                            # Konversi eksplisit ke integer
-                            cleaned_ids.append(int(id_value)) 
-                        except (ValueError, TypeError):
-                            pass
-                return cleaned_ids
             
             # Mendapatkan ID pemain yang aman (INTEGER)
             pemain_ids_team_1 = safe_get_player_id_list([match_row['Pemain_1_A'], match_row['Pemain_1_B']])
@@ -585,7 +564,7 @@ def input_skor(match_id):
             ascending=[False, True, False, True]
         ).index.tolist()
         
-        players_per_court = last_config['players_per_court'] if 'players_per_court' in last_config else (4 if mode_permainan == 'Double' else 2)
+        players_per_court = 4 if mode_permainan == 'Double' else 2
         num_courts = last_config['num_lapangan']
         max_players_to_be_scheduled = num_courts * players_per_court
         
@@ -598,8 +577,8 @@ def input_skor(match_id):
         # Gunakan fungsi bantuan untuk mendapatkan ID integer yang aman
         players_who_played_prev = set()
         for col in ['Pemain_1_A', 'Pemain_1_B', 'Pemain_2_A', 'Pemain_2_B']:
-            safe_ids = [safe_get_player_id_list([id_val])[0] for id_val in prev_matches[col].tolist() if pd.notna(id_val)]
-            players_who_played_prev.update([id for id in safe_ids if id is not None])
+            safe_ids = safe_get_player_id_list(prev_matches[col].tolist())
+            players_who_played_prev.update(safe_ids)
         
         # Pemain yang Bye adalah pemain yang diprioritaskan tapi tidak bermain
         players_on_bye_prev = [id for id in pemain_potensial_prev if id not in players_who_played_prev]
