@@ -114,10 +114,16 @@
         }
         .ranking-table-final tr:last-child td { border-bottom: none; } 
         .ranking-table-final .rank-number { font-weight: 700; color: var(--black-text); text-align: center; width: 50px; }
-        /* CATATAN: Styling untuk points-col dihapus di sini agar menggunakan inline style dari index.html */
         .ranking-table-final .wlt-col { color: var(--grey-text); text-align: center; }
         .ranking-table-final tr:nth-child(2) .rank-number { color: #C0C0C0; } 
         .ranking-table-final tr:nth-child(3) .rank-number { color: #CD7F32; } 
+        
+        /* Gaya spesifik untuk kolom Total Points - Tambahan CSS */
+        .total-points-col {
+            text-align: center; 
+            font-weight: 700; 
+            color: var(--accent-blue); 
+        }
 
         /* Back Button */
         .back-link {
@@ -148,7 +154,7 @@
                 <p style="font-size: 1.1em; color: var(--grey-text); margin-bottom: 5px;">Tournament Champion</p>
                 <div class="winner-name">{{ winner.Nama }}</div>
                 <div class="winner-points">
-                    {# Memastikan menggunakan Total_Poin #}
+                    {# PENGAMBILAN POIN UNTUK WINNER CARD #}
                     **{{ winner.Total_Poin }}** Total Points | {{ winner.W }}/{{ winner.L }}/{{ winner.T }} (W/L/T)
                 </div>
             </div>
@@ -160,8 +166,7 @@
                         <tr>
                             <th class="rank-number">Rank</th>
                             <th>Player</th>
-                            {# Mengikuti style header index.html #}
-                            <th style="text-align: center;">Total Points</th> 
+                            <th class="total-points-col">Total Points</th> 
                             <th class="wlt-col">W/L/T</th> 
                             <th class="wlt-col">Games Played</th>
                         </tr>
@@ -171,8 +176,8 @@
                         <tr>
                             <td class="rank-number">{{ p.Peringkat }}</td> 
                             <td>{{ p.Nama }}</td>
-                            {# MENGGUNAKAN INLINE STYLE DARI index.html UNTUK MEMASTIKAN TAMPIL #}
-                            <td style="text-align: center; font-weight: 700; color: var(--accent-blue);">{{ p.Total_Poin }}</td> 
+                            {# PENGAMBILAN POIN UNTUK TABEL PERINGKAT #}
+                            <td class="total-points-col">{{ p.Total_Poin }}</td> 
                             <td class="wlt-col">{{ p.W }}/{{ p.L }}/{{ p.T }}</td> 
                             <td class="wlt-col">{{ p.Games_Played }}</td>
                         </tr>
