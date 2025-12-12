@@ -148,7 +148,7 @@
                 <p style="font-size: 1.1em; color: var(--grey-text); margin-bottom: 5px;">Tournament Champion</p>
                 <div class="winner-name">{{ winner.Nama }}</div>
                 <div class="winner-points">
-                    {# PENGAMBILAN POIN UNTUK WINNER CARD #}
+                    {# PENGAMBILAN POIN UNTUK WINNER CARD MENGGUNAKAN LOGIKA PYTHON (JINJA) #}
                     **{{ winner.Total_Poin }}** Total Points | {{ winner.W }}/{{ winner.L }}/{{ winner.T }} (W/L/T)
                 </div>
             </div>
@@ -160,7 +160,8 @@
                         <tr>
                             <th class="rank-number">Rank</th>
                             <th>Player</th>
-                            <th class="total-points-col">Total Points</th> <th class="wlt-col">W/L/T</th> 
+                            <th class="total-points-col">Total Points</th> 
+                            <th class="wlt-col">W/L/T</th> 
                             <th class="wlt-col">Games Played</th>
                         </tr>
                     </thead>
@@ -169,7 +170,7 @@
                         <tr>
                             <td class="rank-number">{{ p.Peringkat }}</td> 
                             <td>{{ p.Nama }}</td>
-                            {# **KOREKSI DITAMBAHKAN DI SINI:** Pastikan ada <td> untuk Total_Poin #}
+                            {# PENGAMBILAN DATA TOTAL POINTS DARI LOGIKA PYTHON (JINJA) #}
                             <td class="total-points-col">{{ p.Total_Poin }}</td> 
                             <td class="wlt-col">{{ p.W }}/{{ p.L }}/{{ p.T }}</td> 
                             <td class="wlt-col">{{ p.Games_Played }}</td>
